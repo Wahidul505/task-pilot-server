@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(uuid())
+  name            String?
+  email           String           @unique()
+  password        String
+  profileImg      String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  WorkspaceAdmins WorkspaceAdmin[]
+  Boards          Board[]
+  BoardMembers    BoardMember[]
+  CardMembers     CardMember[]
+  CardComments    CardComment[]
+
+  @@map("users")
+}
+
+model Template {
+  id      String  @id @default(uuid())
+  bgImg   String?
+  bgColor String?
+  Boards  Board[]
+
+  @@map("templates")
+}
+
+model Workspace {
+  id              String           @id @default(uuid())
+  title           String
+  description     String?
+  WorkspaceAdmins WorkspaceAdmin[]
+  Boards          Board[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceAdmin {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@map("workspace_admins")
+}
+
+model Board {
+  id           String        @id @default(uuid())
+  title        String
+  privacy      BoardPrivacy  @default(workspace)
+  admin        String
+  user         User          @relation(fields: [admin], references: [id])
+  BoardMembers BoardMember[]
+  templateId   String
+  template     Template      @relation(fields: [templateId], references: [id])
+  workspaceId  String
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id])
+  Lists        List[]
+
+  @@map("boards")
+}
+
+model BoardMember {
+  id      String @id @default(uuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id])
+
+  @@map("board_members")
+}
+
+model List {
+  id      String @id @default(uuid())
+  title   String
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id])
+  Cards   Card[]
+
+  @@map("lists")
+}
+
+model Card {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  dueDate     DateTime?
+  listId      String
+  list        List      @relation(fields: [listId], references: [id])
+
+  CardMembers  CardMember[]
+  CardComments CardComment[]
+  Checklists   Checklist[]
+
+  @@map("cards")
+}
+
+model CardMember {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  cardId String
+  card   Card   @relation(fields: [cardId], references: [id])
+
+  @@map("card_members")
+}
+
+model CardComment {
+  id      String @id @default(uuid())
+  comment String
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  cardId  String
+  card    Card   @relation(fields: [cardId], references: [id])
+
+  @@map("card_comments")
+}
+
+model Checklist {
+  id             String          @id @default(uuid())
+  title          String
+  cardId         String
+  card           Card            @relation(fields: [cardId], references: [id])
+  ChecklistItems ChecklistItem[]
+
+  @@map("checklists")
+}
+
+model ChecklistItem {
+  id          String              @id @default(uuid())
+  title       String
+  status      ChecklistItemStatus @default(pending)
+  checklistId String
+  checklist   Checklist           @relation(fields: [checklistId], references: [id])
+
+  @@map("checklist_items")
+}
+
+enum BoardPrivacy {
+  private
+  workspace
+}
+
+enum ChecklistItemStatus {
+  pending
+  done
+}
