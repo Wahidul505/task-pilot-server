@@ -15,3 +15,9 @@ export type IGenericErrorResponse = {
   message: string;
   errorMessages: IGenericErrorMessage[];
 };
+
+export type IWorkSpacePayload = {
+  title: string;
+  description?: string;
+  admins: string[];
+};
