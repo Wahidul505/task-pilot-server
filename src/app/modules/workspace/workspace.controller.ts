@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
+import { JwtPayload } from 'jsonwebtoken';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { WorkspaceService } from './workspace.service';
@@ -24,7 +25,36 @@ const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getSingleFromDB = catchAsync(async (req: Request, res: Response) => {
+  const result = await WorkspaceService.getSingleFromDB(
+    req.params.id as string,
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Workspace fetched',
+    data: result,
+  });
+});
+
+const getAllWorkspacesOfAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await WorkspaceService.getAllWorkspacesOfAdmin(
+      req?.user as JwtPayload
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Workspaces fetched',
+      data: result,
+    });
+  }
+);
+
 export const WorkspaceController = {
   insertIntoDB,
   getAllFromDB,
+  getSingleFromDB,
+  getAllWorkspacesOfAdmin,
 };

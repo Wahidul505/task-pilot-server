@@ -32,7 +32,35 @@ const addBoardMembers = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const removeBoardMember = catchAsync(async (req: Request, res: Response) => {
+  const result = await BoardService.removeBoardMember(
+    req.params.id,
+    req.body,
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Member removed',
+    data: result,
+  });
+});
+
+const getAllBoardsOfMember = catchAsync(async (req: Request, res: Response) => {
+  const result = await BoardService.getAllBoardsOfMember(
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Fetched Boards',
+    data: result,
+  });
+});
+
 export const BoardController = {
   insertIntoDB,
   addBoardMembers,
+  removeBoardMember,
+  getAllBoardsOfMember,
 };

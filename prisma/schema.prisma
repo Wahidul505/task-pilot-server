@@ -44,7 +44,6 @@ model Workspace {
 }
 
 model WorkspaceAdmin {
-  id          String    @id @default(uuid())
   userId      String
   user        User      @relation(fields: [userId], references: [id])
   workspaceId String
@@ -107,7 +106,6 @@ model Card {
 }
 
 model CardMember {
-  id     String @id @default(uuid())
   userId String
   user   User   @relation(fields: [userId], references: [id])
   cardId String
