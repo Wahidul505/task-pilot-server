@@ -1,3 +1,4 @@
+import { Workspace } from '@prisma/client';
 import httpStatus from 'http-status';
 import ApiError from '../../../errors/ApiError';
 import { IWorkSpacePayload } from '../../../interfaces/common';
@@ -29,6 +30,16 @@ const insertIntoDB = async (payload: IWorkSpacePayload) => {
   }
 };
 
+const getAllFromDB = async (): Promise<Workspace[]> => {
+  const result = await prisma.workspace.findMany({
+    include: {
+      WorkspaceAdmins: true,
+    },
+  });
+  return result;
+};
+
 export const WorkspaceService = {
   insertIntoDB,
+  getAllFromDB,
 };

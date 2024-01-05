@@ -4,8 +4,8 @@ import { UserController } from './user.controller';
 
 const router = express.Router();
 
-router.get('/:id', auth(), UserController.getDataById);
+router.get('/:id', auth(), UserController.getSingleData);
 
-router.patch('/:id', auth(), UserController.updateData);
+router.patch('/:id', auth(), UserController.updateSingleData);
 
 export const UserRoutes = router;

@@ -5,7 +5,7 @@ import ApiError from '../../../errors/ApiError';
 import prisma from '../../../shared/prisma';
 import { validateUser } from '../../../utils/validateUser';
 
-const getDataById = async (
+const getSingleData = async (
   userId: string,
   user: JwtPayload
 ): Promise<Partial<User>> => {
@@ -26,7 +26,7 @@ const getDataById = async (
   return userInfo;
 };
 
-const updateData = async (
+const updateSingleData = async (
   userId: string,
   user: JwtPayload,
   payload: Partial<User>
@@ -42,7 +42,7 @@ const updateData = async (
     throw new ApiError(httpStatus.BAD_REQUEST, 'User does not exist');
   }
 
-  const updateData = {
+  const updateSingleData = {
     name: payload.name || isUserExist.name,
     dp: payload.dp || isUserExist.dp,
   };
@@ -51,13 +51,13 @@ const updateData = async (
     where: {
       id: userId,
     },
-    data: updateData,
+    data: updateSingleData,
   });
 
-  return updateData;
+  return updateSingleData;
 };
 
 export const UserService = {
-  getDataById,
-  updateData,
+  getSingleData,
+  updateSingleData,
 };

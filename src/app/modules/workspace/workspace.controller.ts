@@ -14,6 +14,17 @@ const insertIntoDB = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
+  const result = await WorkspaceService.getAllFromDB();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Workspaces fetched',
+    data: result,
+  });
+});
+
 export const WorkspaceController = {
   insertIntoDB,
+  getAllFromDB,
 };

@@ -50,13 +50,14 @@ model WorkspaceAdmin {
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
+  @@unique([userId, workspaceId])
   @@map("workspace_admins")
 }
 
 model Board {
   id           String        @id @default(uuid())
   title        String
-  privacy      BoardPrivacy  @default(workspace)
+  privacy      BoardPrivacy
   admin        String
   user         User          @relation(fields: [admin], references: [id])
   BoardMembers BoardMember[]
@@ -70,12 +71,12 @@ model Board {
 }
 
 model BoardMember {
-  id      String @id @default(uuid())
   userId  String
   user    User   @relation(fields: [userId], references: [id])
   boardId String
   board   Board  @relation(fields: [boardId], references: [id])
 
+  @@unique([userId, boardId])
   @@map("board_members")
 }
 
@@ -90,12 +91,13 @@ model List {
 }
 
 model Card {
-  id          String    @id @default(uuid())
+  id          String      @id @default(uuid())
   title       String
   description String?
   dueDate     DateTime?
+  status      CardStatus?
   listId      String
-  list        List      @relation(fields: [listId], references: [id])
+  list        List        @relation(fields: [listId], references: [id])
 
   CardMembers  CardMember[]
   CardComments CardComment[]
@@ -111,6 +113,7 @@ model CardMember {
   cardId String
   card   Card   @relation(fields: [cardId], references: [id])
 
+  @@unique([userId, cardId])
   @@map("card_members")
 }
 
@@ -153,4 +156,10 @@ enum BoardPrivacy {
 enum ChecklistItemStatus {
   pending
   done
+}
+
+enum CardStatus {
+  pending
+  done
+  overdue
 }
