@@ -87,9 +87,25 @@ const getAllBoardsOfMember = async (
   return result;
 };
 
+const changeBoardPrivacy = async (
+  id: string,
+  payload: { privacy: 'workspace' | 'private' },
+  user: JwtPayload
+): Promise<Board> => {
+  await BoardUtils.checkAdminExistInBoard(id, user?.userId);
+  const result = await prisma.board.update({
+    where: {
+      id,
+    },
+    data: { privacy: payload?.privacy },
+  });
+  return result;
+};
+
 export const BoardService = {
   insertIntoDB,
   addBoardMembers,
   removeBoardMember,
   getAllBoardsOfMember,
+  changeBoardPrivacy,
 };

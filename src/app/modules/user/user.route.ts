@@ -8,4 +8,6 @@ router.get('/:id', auth(), UserController.getSingleData);
 
 router.patch('/:id', auth(), UserController.updateSingleData);
 
+router.get('/', UserController.getAllFromDB);
+
 export const UserRoutes = router;

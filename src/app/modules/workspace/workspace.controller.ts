@@ -6,7 +6,10 @@ import sendResponse from '../../../shared/sendResponse';
 import { WorkspaceService } from './workspace.service';
 
 const insertIntoDB = catchAsync(async (req: Request, res: Response) => {
-  const result = await WorkspaceService.insertIntoDB(req.body);
+  const result = await WorkspaceService.insertIntoDB(
+    req?.user as JwtPayload,
+    req?.body
+  );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -52,9 +55,24 @@ const getAllWorkspacesOfAdmin = catchAsync(
   }
 );
 
+const updateSingleData = catchAsync(async (req: Request, res: Response) => {
+  const result = await WorkspaceService.updateSingleData(
+    req?.params?.id as string,
+    req?.body,
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Workspace updated',
+    data: result,
+  });
+});
+
 export const WorkspaceController = {
   insertIntoDB,
   getAllFromDB,
   getSingleFromDB,
   getAllWorkspacesOfAdmin,
+  updateSingleData,
 };

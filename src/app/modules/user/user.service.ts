@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import ApiError from '../../../errors/ApiError';
 import prisma from '../../../shared/prisma';
+import { exclude } from '../../../utils/exclude';
 import { validateUser } from '../../../utils/validateUser';
 
 const getSingleData = async (
@@ -57,7 +58,14 @@ const updateSingleData = async (
   return updateSingleData;
 };
 
+const getAllFromDB = async () => {
+  const users = await prisma.user.findMany();
+  const result = users?.map(user => exclude(user, ['password']));
+  return result;
+};
+
 export const UserService = {
   getSingleData,
   updateSingleData,
+  getAllFromDB,
 };

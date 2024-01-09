@@ -35,7 +35,18 @@ const updateSingleData = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.getAllFromDB();
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Users Fetched',
+    data: result,
+  });
+});
+
 export const UserController = {
   getSingleData,
   updateSingleData,
+  getAllFromDB,
 };

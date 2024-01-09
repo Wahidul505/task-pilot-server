@@ -21,8 +21,9 @@ const signup = async (payload: User): Promise<string> => {
   });
 
   const userInfo = {
-    userId: result.id,
-    userEmail: result.email,
+    userId: result?.id,
+    userEmail: result?.email,
+    userName: result?.name || '',
   };
 
   const token = jwtHelpers.createToken(
@@ -45,12 +46,13 @@ const login = async (payload: Partial<User>): Promise<string> => {
   }
 
   if (isUserExist.password !== payload.password) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Wrong Password');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Wrong Password');
   }
 
   const userInfo = {
-    userId: isUserExist.id,
-    userEmail: isUserExist.email,
+    userId: isUserExist?.id,
+    userEmail: isUserExist?.email,
+    userName: isUserExist?.name || '',
   };
 
   const token = jwtHelpers.createToken(

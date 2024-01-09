@@ -6,11 +6,13 @@ const create = z.object({
       required_error: 'Title is required',
     }),
     description: z.string().optional(),
-    admins: z.array(
-      z.string({
-        required_error: 'admin is required',
-      })
-    ),
+    admins: z
+      .array(
+        z.string({
+          required_error: 'admin is required',
+        })
+      )
+      .optional(),
   }),
 });
 

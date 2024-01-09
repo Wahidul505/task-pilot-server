@@ -58,9 +58,24 @@ const getAllBoardsOfMember = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const changeBoardPrivacy = catchAsync(async (req: Request, res: Response) => {
+  const result = await BoardService.changeBoardPrivacy(
+    req?.params?.id as string,
+    req?.body as { privacy: 'workspace' | 'private' },
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Privacy changed',
+    data: result,
+  });
+});
+
 export const BoardController = {
   insertIntoDB,
   addBoardMembers,
   removeBoardMember,
   getAllBoardsOfMember,
+  changeBoardPrivacy,
 };

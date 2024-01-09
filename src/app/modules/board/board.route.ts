@@ -4,9 +4,10 @@ import { BoardController } from './board.controller';
 
 const router = express.Router();
 
-router.post('/', auth(), BoardController.insertIntoDB);
+router.patch('/admin/:id/privacy', auth(), BoardController.changeBoardPrivacy);
+router.get('/member', auth(), BoardController.getAllBoardsOfMember);
 router.post('/:id/member', auth(), BoardController.addBoardMembers);
 router.delete('/:id/member', auth(), BoardController.removeBoardMember);
-router.get('/member', auth(), BoardController.getAllBoardsOfMember);
+router.post('/', auth(), BoardController.insertIntoDB);
 
 export const BoardRoutes = router;
