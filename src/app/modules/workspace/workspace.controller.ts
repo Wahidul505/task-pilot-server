@@ -69,10 +69,40 @@ const updateSingleData = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const addWorkspaceAdmins = catchAsync(async (req: Request, res: Response) => {
+  const result = await WorkspaceService.addWorkspaceAdmins(
+    req?.params?.id as string,
+    req?.body,
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Admins added',
+    data: result,
+  });
+});
+
+const removeWorkspaceAdmin = catchAsync(async (req: Request, res: Response) => {
+  const result = await WorkspaceService.removeWorkspaceAdmin(
+    req?.params?.id as string,
+    req?.body as { adminId: string },
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Admin removed',
+    data: result,
+  });
+});
+
 export const WorkspaceController = {
   insertIntoDB,
   getAllFromDB,
   getSingleFromDB,
   getAllWorkspacesOfAdmin,
   updateSingleData,
+  addWorkspaceAdmins,
+  removeWorkspaceAdmin,
 };

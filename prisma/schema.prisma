@@ -56,7 +56,6 @@ model WorkspaceAdmin {
 model Board {
   id           String        @id @default(uuid())
   title        String
-  privacy      BoardPrivacy
   admin        String
   user         User          @relation(fields: [admin], references: [id])
   BoardMembers BoardMember[]
@@ -80,11 +79,12 @@ model BoardMember {
 }
 
 model List {
-  id      String @id @default(uuid())
-  title   String
-  boardId String
-  board   Board  @relation(fields: [boardId], references: [id])
-  Cards   Card[]
+  id        String   @id @default(uuid())
+  title     String
+  boardId   String
+  createdAt DateTime @default(now())
+  board     Board    @relation(fields: [boardId], references: [id])
+  Cards     Card[]
 
   @@map("lists")
 }
@@ -95,6 +95,7 @@ model Card {
   description String?
   dueDate     DateTime?
   status      CardStatus?
+  createdAt   DateTime    @default(now())
   listId      String
   list        List        @relation(fields: [listId], references: [id])
 
@@ -144,11 +145,6 @@ model ChecklistItem {
   checklist   Checklist           @relation(fields: [checklistId], references: [id])
 
   @@map("checklist_items")
-}
-
-enum BoardPrivacy {
-  private
-  workspace
 }
 
 enum ChecklistItemStatus {

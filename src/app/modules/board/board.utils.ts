@@ -30,7 +30,31 @@ const checkAdminExistInBoard = async (boardId: string, userId: string) => {
   }
 };
 
+const checkEitherAdminOrMemberInBoard = async (
+  boardId: string,
+  userId: string
+) => {
+  const isAdmin = await prisma.board.findUnique({
+    where: {
+      id: boardId,
+      admin: userId,
+    },
+  });
+
+  const isMember = await prisma.boardMember.findFirst({
+    where: {
+      userId: userId,
+      boardId: boardId,
+    },
+  });
+
+  if (!isAdmin && !isMember) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You are not Authorized');
+  }
+};
+
 export const BoardUtils = {
   checkAdminExistInWorkspace,
   checkAdminExistInBoard,
+  checkEitherAdminOrMemberInBoard,
 };

@@ -58,16 +58,29 @@ const getAllBoardsOfMember = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const changeBoardPrivacy = catchAsync(async (req: Request, res: Response) => {
-  const result = await BoardService.changeBoardPrivacy(
+const getSingleData = catchAsync(async (req: Request, res: Response) => {
+  const result = await BoardService.getSingleData(
     req?.params?.id as string,
-    req?.body as { privacy: 'workspace' | 'private' },
     req?.user as JwtPayload
   );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Privacy changed',
+    message: 'Board Fetched',
+    data: result,
+  });
+});
+
+const updateBoardTitle = catchAsync(async (req: Request, res: Response) => {
+  const result = await BoardService.updateBoardTitle(
+    req?.params?.id as string,
+    req?.body as { title: string },
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Board updated',
     data: result,
   });
 });
@@ -77,5 +90,6 @@ export const BoardController = {
   addBoardMembers,
   removeBoardMember,
   getAllBoardsOfMember,
-  changeBoardPrivacy,
+  getSingleData,
+  updateBoardTitle,
 };

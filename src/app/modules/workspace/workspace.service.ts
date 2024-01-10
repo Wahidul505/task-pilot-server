@@ -61,7 +61,11 @@ const getSingleFromDB = async (
           template: true,
         },
       },
-      WorkspaceAdmins: true,
+      WorkspaceAdmins: {
+        include: {
+          user: true,
+        },
+      },
     },
   });
   return result;
@@ -96,10 +100,54 @@ const updateSingleData = async (
   return result;
 };
 
+const addWorkspaceAdmins = async (
+  id: string,
+  payload: any,
+  user: JwtPayload
+) => {
+  try {
+    await WorkspaceUtils.checkAdminExistInWorkspace(user?.userId, id);
+
+    const admins = payload?.admins?.filter(
+      (admin: string) => admin !== user?.userId
+    );
+
+    for (let index = 0; index < admins.length; index++) {
+      const result = await prisma.workspaceAdmin.create({
+        data: {
+          workspaceId: id,
+          userId: admins[index],
+        },
+      });
+      console.log({ result });
+    }
+    return payload;
+  } catch (error) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Already Added');
+  }
+};
+
+const removeWorkspaceAdmin = async (
+  id: string,
+  payload: { adminId: string },
+  user: JwtPayload
+) => {
+  await WorkspaceUtils.checkAdminExistInWorkspace(user?.userId, id);
+  await prisma.workspaceAdmin.deleteMany({
+    where: {
+      workspaceId: id,
+      userId: payload.adminId as string,
+    },
+  });
+  return payload;
+};
+
 export const WorkspaceService = {
   insertIntoDB,
   getAllFromDB,
   getSingleFromDB,
   getAllWorkspacesOfAdmin,
   updateSingleData,
+  addWorkspaceAdmins,
+  removeWorkspaceAdmin,
 };

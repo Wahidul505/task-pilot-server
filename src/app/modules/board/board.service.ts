@@ -24,32 +24,24 @@ const insertIntoDB = async (
 
 const addBoardMembers = async (id: string, payload: any, user: JwtPayload) => {
   try {
-    const isAdmin = await prisma.board.findUnique({
-      where: {
-        id,
-        admin: user?.userId,
-      },
-    });
+    await BoardUtils.checkEitherAdminOrMemberInBoard(id, user?.userId);
 
-    const isMember = await prisma.boardMember.findFirst({
-      where: {
-        userId: user?.userId,
-        boardId: id,
-      },
-    });
+    const members = payload?.members?.filter(
+      (member: string) => member !== user?.userId
+    );
 
-    if (!isAdmin && !isMember) {
-      throw new ApiError(httpStatus.FORBIDDEN, 'You are not Authorized');
-    }
+    console.log({ members });
 
-    for (let index = 0; index < payload.members.length; index++) {
-      await prisma.boardMember.create({
+    for (let index = 0; index < members.length; index++) {
+      const result = await prisma.boardMember.create({
         data: {
           boardId: id,
-          userId: payload.members[index],
+          userId: members[index],
         },
       });
+      console.log({ result });
     }
+    return payload;
   } catch (error) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Already Added');
   }
@@ -67,6 +59,7 @@ const removeBoardMember = async (
       userId: payload.memberId as string,
     },
   });
+  return payload;
 };
 
 const getAllBoardsOfMember = async (
@@ -87,9 +80,40 @@ const getAllBoardsOfMember = async (
   return result;
 };
 
-const changeBoardPrivacy = async (
+const getSingleData = async (
   id: string,
-  payload: { privacy: 'workspace' | 'private' },
+  user: JwtPayload
+): Promise<Board | null> => {
+  await BoardUtils.checkEitherAdminOrMemberInBoard(id, user?.userId);
+  const result = await prisma.board.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      workspace: {
+        include: {
+          Boards: {
+            include: {
+              template: true,
+            },
+          },
+        },
+      },
+      BoardMembers: {
+        include: {
+          user: true,
+        },
+      },
+      user: true,
+      template: true,
+    },
+  });
+  return result;
+};
+
+const updateBoardTitle = async (
+  id: string,
+  payload: { title: string },
   user: JwtPayload
 ): Promise<Board> => {
   await BoardUtils.checkAdminExistInBoard(id, user?.userId);
@@ -97,7 +121,7 @@ const changeBoardPrivacy = async (
     where: {
       id,
     },
-    data: { privacy: payload?.privacy },
+    data: { title: payload?.title },
   });
   return result;
 };
@@ -107,5 +131,6 @@ export const BoardService = {
   addBoardMembers,
   removeBoardMember,
   getAllBoardsOfMember,
-  changeBoardPrivacy,
+  getSingleData,
+  updateBoardTitle,
 };
