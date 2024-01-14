@@ -2,6 +2,8 @@ import express from 'express';
 import { AuthRoutes } from '../modules/auth/auth.route';
 import { BoardRoutes } from '../modules/board/board.route';
 import { CardRoutes } from '../modules/card/card.route';
+import { ChecklistRoutes } from '../modules/checklist/checklist.route';
+import { ChecklistItemRoutes } from '../modules/checklistItem/checklistItem.route';
 import { ListRoutes } from '../modules/list/list.route';
 import { TemplateRoutes } from '../modules/template/template.route';
 import { UserRoutes } from '../modules/user/user.route';
@@ -37,6 +39,14 @@ const moduleRoutes = [
   {
     path: '/card',
     route: CardRoutes,
+  },
+  {
+    path: '/checklist',
+    route: ChecklistRoutes,
+  },
+  {
+    path: '/checklist-item',
+    route: ChecklistItemRoutes,
   },
 ];
 

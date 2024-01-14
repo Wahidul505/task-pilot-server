@@ -1,0 +1,91 @@
+import { Checklist } from '@prisma/client';
+import httpStatus from 'http-status';
+import { JwtPayload } from 'jsonwebtoken';
+import ApiError from '../../../errors/ApiError';
+import prisma from '../../../shared/prisma';
+import { BoardUtils } from '../board/board.utils';
+
+const createChecklist = async (
+  payload: Checklist,
+  user: JwtPayload
+): Promise<Checklist> => {
+  const card = await prisma.card.findUnique({
+    where: {
+      id: payload?.cardId,
+    },
+  });
+  if (!card) throw new ApiError(httpStatus.BAD_REQUEST, 'Card not found');
+  const list = await prisma.list.findUnique({
+    where: {
+      id: card?.listId,
+    },
+  });
+  if (!list) throw new ApiError(httpStatus.BAD_REQUEST, 'List not found');
+  await BoardUtils.checkEitherAdminOrMemberInBoard(list?.boardId, user?.userId);
+
+  const result = await prisma.checklist.create({
+    data: payload,
+  });
+  return result;
+};
+
+const updateChecklistTitle = async (
+  id: string,
+  payload: { title: string },
+  user: JwtPayload
+): Promise<Checklist> => {
+  const checklist = await prisma.checklist.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      card: true,
+    },
+  });
+  const card = await prisma.card.findUnique({
+    where: {
+      id: checklist?.cardId,
+    },
+  });
+  if (!card) throw new ApiError(httpStatus.BAD_REQUEST, 'Card not found');
+  const list = await prisma.list.findUnique({
+    where: {
+      id: card?.listId,
+    },
+  });
+  if (!list) throw new ApiError(httpStatus.BAD_REQUEST, 'List not found');
+  await BoardUtils.checkEitherAdminOrMemberInBoard(list?.boardId, user?.userId);
+
+  const result = await prisma.checklist.update({
+    where: {
+      id,
+    },
+    data: { title: payload?.title },
+  });
+  return result;
+};
+
+const getAllChecklist = async (cardId: string): Promise<Checklist[]> => {
+  const result = await prisma.checklist.findMany({
+    where: {
+      cardId,
+    },
+    include: {
+      ChecklistItems: {
+        include: {
+          checklist: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  });
+  return result;
+};
+
+export const ChecklistService = {
+  createChecklist,
+  updateChecklistTitle,
+  getAllChecklist,
+};

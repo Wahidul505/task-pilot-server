@@ -131,6 +131,7 @@ model Checklist {
   id             String          @id @default(uuid())
   title          String
   cardId         String
+  createdAt      DateTime        @default(now())
   card           Card            @relation(fields: [cardId], references: [id])
   ChecklistItems ChecklistItem[]
 
@@ -141,6 +142,7 @@ model ChecklistItem {
   id          String              @id @default(uuid())
   title       String
   status      ChecklistItemStatus @default(pending)
+  createdAt   DateTime            @default(now())
   checklistId String
   checklist   Checklist           @relation(fields: [checklistId], references: [id])
 
