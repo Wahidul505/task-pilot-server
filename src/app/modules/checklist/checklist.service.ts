@@ -75,6 +75,9 @@ const getAllChecklist = async (cardId: string): Promise<Checklist[]> => {
         include: {
           checklist: true,
         },
+        orderBy: {
+          createdAt: 'asc',
+        },
       },
     },
     orderBy: {

@@ -18,6 +18,39 @@ const createChecklistItem = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateSingleChecklistItem = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await ChecklistItemService.updateSingleChecklistItem(
+      req?.params?.id,
+      req.body,
+      req?.user as JwtPayload
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Checklist item updated',
+      data: result,
+    });
+  }
+);
+
+const deleteSingleChecklistItem = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await ChecklistItemService.deleteSingleChecklistItem(
+      req?.params?.id,
+      req?.user as JwtPayload
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Checklist item deleted',
+      data: result,
+    });
+  }
+);
+
 export const ChecklistItemController = {
   createChecklistItem,
+  updateSingleChecklistItem,
+  deleteSingleChecklistItem,
 };

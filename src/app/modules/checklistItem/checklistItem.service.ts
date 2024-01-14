@@ -3,32 +3,16 @@ import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import ApiError from '../../../errors/ApiError';
 import prisma from '../../../shared/prisma';
-import { BoardUtils } from '../board/board.utils';
+import { ChecklistItemUtils } from './checklistItem.utils';
 
 const createChecklistItem = async (
   payload: ChecklistItem,
   user: JwtPayload
 ): Promise<ChecklistItem> => {
-  const checklist = await prisma.checklist.findUnique({
-    where: {
-      id: payload?.checklistId,
-    },
-  });
-  if (!checklist)
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Checklist not found');
-  const card = await prisma.card.findUnique({
-    where: {
-      id: checklist?.cardId,
-    },
-  });
-  if (!card) throw new ApiError(httpStatus.BAD_REQUEST, 'Card not found');
-  const list = await prisma.list.findUnique({
-    where: {
-      id: card?.listId,
-    },
-  });
-  if (!list) throw new ApiError(httpStatus.BAD_REQUEST, 'List not found');
-  await BoardUtils.checkEitherAdminOrMemberInBoard(list?.boardId, user?.userId);
+  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard(
+    payload?.checklistId,
+    user?.userId
+  );
 
   const result = await prisma.checklistItem.create({
     data: payload,
@@ -36,6 +20,58 @@ const createChecklistItem = async (
   return result;
 };
 
+const updateSingleChecklistItem = async (
+  id: string,
+  payload: Partial<ChecklistItem>,
+  user: JwtPayload
+): Promise<ChecklistItem> => {
+  const checklist = await prisma.checklistItem.findUnique({
+    where: {
+      id,
+    },
+  });
+  if (!checklist)
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Checklist not found');
+  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard(
+    checklist?.checklistId,
+    user?.userId
+  );
+
+  const result = await prisma.checklistItem.update({
+    where: {
+      id,
+    },
+    data: payload,
+  });
+  return result;
+};
+
+const deleteSingleChecklistItem = async (
+  id: string,
+  user: JwtPayload
+): Promise<ChecklistItem> => {
+  const checklist = await prisma.checklistItem.findUnique({
+    where: {
+      id,
+    },
+  });
+  if (!checklist)
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Checklist not found');
+  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard(
+    checklist?.checklistId,
+    user?.userId
+  );
+
+  const result = await prisma.checklistItem.delete({
+    where: {
+      id,
+    },
+  });
+  return result;
+};
+
 export const ChecklistItemService = {
   createChecklistItem,
+  updateSingleChecklistItem,
+  deleteSingleChecklistItem,
 };
