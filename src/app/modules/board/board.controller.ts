@@ -58,6 +58,21 @@ const getAllBoardsOfMember = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllBoardsOfSingleWorkspace = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await BoardService.getAllBoardsOfSingleWorkspace(
+      req?.params?.workspaceId as string,
+      req?.user as JwtPayload
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Fetched Boards',
+      data: result,
+    });
+  }
+);
+
 const getSingleData = catchAsync(async (req: Request, res: Response) => {
   const result = await BoardService.getSingleData(
     req?.params?.id as string,
@@ -90,6 +105,7 @@ export const BoardController = {
   addBoardMembers,
   removeBoardMember,
   getAllBoardsOfMember,
+  getAllBoardsOfSingleWorkspace,
   getSingleData,
   updateBoardTitle,
 };

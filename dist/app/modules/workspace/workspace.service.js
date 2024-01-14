@@ -72,6 +72,20 @@ const getSingleFromDB = (id, user) => __awaiter(void 0, void 0, void 0, function
         },
         include: {
             Boards: {
+                where: {
+                    OR: [
+                        {
+                            BoardMembers: {
+                                some: {
+                                    userId: user === null || user === void 0 ? void 0 : user.userId,
+                                },
+                            },
+                        },
+                        {
+                            admin: user === null || user === void 0 ? void 0 : user.userId,
+                        },
+                    ],
+                },
                 include: {
                     template: true,
                 },
@@ -92,6 +106,46 @@ const getAllWorkspacesOfAdmin = (user) => __awaiter(void 0, void 0, void 0, func
         },
         include: {
             workspace: true,
+        },
+    });
+    return result;
+});
+const getAllWorkspacesOfGuest = (user) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.workspace.findMany({
+        where: {
+            WorkspaceAdmins: {
+                none: {
+                    userId: user === null || user === void 0 ? void 0 : user.userId,
+                },
+            },
+            Boards: {
+                some: {
+                    BoardMembers: {
+                        some: {
+                            userId: user === null || user === void 0 ? void 0 : user.userId,
+                        },
+                    },
+                },
+            },
+        },
+        include: {
+            Boards: {
+                where: {
+                    BoardMembers: {
+                        some: {
+                            userId: user === null || user === void 0 ? void 0 : user.userId,
+                        },
+                    },
+                },
+                include: {
+                    template: true,
+                },
+            },
+            WorkspaceAdmins: {
+                include: {
+                    user: true,
+                },
+            },
         },
     });
     return result;
@@ -144,4 +198,5 @@ exports.WorkspaceService = {
     updateSingleData,
     addWorkspaceAdmins,
     removeWorkspaceAdmin,
+    getAllWorkspacesOfGuest,
 };

@@ -53,6 +53,15 @@ const getAllWorkspacesOfAdmin = (0, catchAsync_1.default)((req, res) => __awaite
         data: result,
     });
 }));
+const getAllWorkspacesOfGuest = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield workspace_service_1.WorkspaceService.getAllWorkspacesOfGuest(req === null || req === void 0 ? void 0 : req.user);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Workspaces fetched',
+        data: result,
+    });
+}));
 const updateSingleData = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const result = yield workspace_service_1.WorkspaceService.updateSingleData((_a = req === null || req === void 0 ? void 0 : req.params) === null || _a === void 0 ? void 0 : _a.id, req === null || req === void 0 ? void 0 : req.body, req === null || req === void 0 ? void 0 : req.user);
@@ -88,6 +97,7 @@ exports.WorkspaceController = {
     getAllFromDB,
     getSingleFromDB,
     getAllWorkspacesOfAdmin,
+    getAllWorkspacesOfGuest,
     updateSingleData,
     addWorkspaceAdmins,
     removeWorkspaceAdmin,

@@ -71,6 +71,38 @@ const getAllBoardsOfMember = (user) => __awaiter(void 0, void 0, void 0, functio
     });
     return result;
 });
+const getAllBoardsOfSingleWorkspace = (workspaceId, user) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.board.findMany({
+        where: {
+            workspaceId,
+            OR: [
+                {
+                    BoardMembers: {
+                        some: {
+                            userId: user === null || user === void 0 ? void 0 : user.userId,
+                        },
+                    },
+                },
+                {
+                    admin: user === null || user === void 0 ? void 0 : user.userId,
+                },
+            ],
+        },
+        include: {
+            template: true,
+            workspace: {
+                include: {
+                    WorkspaceAdmins: {
+                        include: {
+                            user: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+    return result;
+});
 const getSingleData = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
     yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard(id, user === null || user === void 0 ? void 0 : user.userId);
     const result = yield prisma_1.default.board.findUnique({
@@ -115,4 +147,5 @@ exports.BoardService = {
     getAllBoardsOfMember,
     getSingleData,
     updateBoardTitle,
+    getAllBoardsOfSingleWorkspace,
 };

@@ -55,6 +55,20 @@ const getAllWorkspacesOfAdmin = catchAsync(
   }
 );
 
+const getAllWorkspacesOfGuest = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await WorkspaceService.getAllWorkspacesOfGuest(
+      req?.user as JwtPayload
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Workspaces fetched',
+      data: result,
+    });
+  }
+);
+
 const updateSingleData = catchAsync(async (req: Request, res: Response) => {
   const result = await WorkspaceService.updateSingleData(
     req?.params?.id as string,
@@ -102,6 +116,7 @@ export const WorkspaceController = {
   getAllFromDB,
   getSingleFromDB,
   getAllWorkspacesOfAdmin,
+  getAllWorkspacesOfGuest,
   updateSingleData,
   addWorkspaceAdmins,
   removeWorkspaceAdmin,

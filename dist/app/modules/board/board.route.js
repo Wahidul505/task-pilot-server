@@ -9,6 +9,7 @@ const auth_1 = __importDefault(require("../../middlewares/auth"));
 const board_controller_1 = require("./board.controller");
 const router = express_1.default.Router();
 router.get('/member', (0, auth_1.default)(), board_controller_1.BoardController.getAllBoardsOfMember);
+router.get('/:workspaceId/common', (0, auth_1.default)(), board_controller_1.BoardController.getAllBoardsOfSingleWorkspace);
 router.post('/:id/member', (0, auth_1.default)(), board_controller_1.BoardController.addBoardMembers);
 router.delete('/:id/member', (0, auth_1.default)(), board_controller_1.BoardController.removeBoardMember);
 router.post('/', (0, auth_1.default)(), board_controller_1.BoardController.insertIntoDB);

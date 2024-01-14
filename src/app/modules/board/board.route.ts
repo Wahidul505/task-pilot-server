@@ -5,6 +5,11 @@ import { BoardController } from './board.controller';
 const router = express.Router();
 
 router.get('/member', auth(), BoardController.getAllBoardsOfMember);
+router.get(
+  '/:workspaceId/common',
+  auth(),
+  BoardController.getAllBoardsOfSingleWorkspace
+);
 router.post('/:id/member', auth(), BoardController.addBoardMembers);
 router.delete('/:id/member', auth(), BoardController.removeBoardMember);
 router.post('/', auth(), BoardController.insertIntoDB);

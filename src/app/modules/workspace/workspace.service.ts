@@ -57,6 +57,20 @@ const getSingleFromDB = async (
     },
     include: {
       Boards: {
+        where: {
+          OR: [
+            {
+              BoardMembers: {
+                some: {
+                  userId: user?.userId,
+                },
+              },
+            },
+            {
+              admin: user?.userId,
+            },
+          ],
+        },
         include: {
           template: true,
         },
@@ -80,6 +94,49 @@ const getAllWorkspacesOfAdmin = async (
     },
     include: {
       workspace: true,
+    },
+  });
+  return result;
+};
+
+const getAllWorkspacesOfGuest = async (
+  user: JwtPayload
+): Promise<Workspace[]> => {
+  const result = await prisma.workspace.findMany({
+    where: {
+      WorkspaceAdmins: {
+        none: {
+          userId: user?.userId,
+        },
+      },
+      Boards: {
+        some: {
+          BoardMembers: {
+            some: {
+              userId: user?.userId,
+            },
+          },
+        },
+      },
+    },
+    include: {
+      Boards: {
+        where: {
+          BoardMembers: {
+            some: {
+              userId: user?.userId,
+            },
+          },
+        },
+        include: {
+          template: true,
+        },
+      },
+      WorkspaceAdmins: {
+        include: {
+          user: true,
+        },
+      },
     },
   });
   return result;
@@ -150,4 +207,5 @@ export const WorkspaceService = {
   updateSingleData,
   addWorkspaceAdmins,
   removeWorkspaceAdmin,
+  getAllWorkspacesOfGuest,
 };

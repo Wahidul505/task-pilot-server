@@ -24,7 +24,28 @@ const getAllLists = async (
       boardId: boardId,
     },
     include: {
-      Cards: true,
+      Cards: {
+        include: {
+          list: {
+            include: {
+              board: {
+                include: {
+                  BoardMembers: {
+                    include: {
+                      user: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          CardMembers: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
     },
     orderBy: {
       createdAt: 'asc',
@@ -72,6 +93,8 @@ const deleteSingleList = async (
   id: string,
   user: JwtPayload
 ): Promise<List> => {
+  console.log({ id });
+  console.log({ user });
   const result = await prisma.list.delete({
     where: {
       id,

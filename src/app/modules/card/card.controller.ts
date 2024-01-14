@@ -45,8 +45,53 @@ const updateListId = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const addCardMember = catchAsync(async (req: Request, res: Response) => {
+  const result = await CardService.addCardMember(
+    req.params?.id as string,
+    req?.body as { memberId: string },
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Card member added',
+    data: result,
+  });
+});
+
+const removeCardMember = catchAsync(async (req: Request, res: Response) => {
+  const result = await CardService.removeCardMember(
+    req.params?.id as string,
+    req?.body as { memberId: string },
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Card member removed',
+    data: result,
+  });
+});
+
+const updateSingleCard = catchAsync(async (req: Request, res: Response) => {
+  const result = await CardService.updateSingleCard(
+    req.params?.id as string,
+    req?.body as { title?: string; description?: string },
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Card Updated',
+    data: result,
+  });
+});
+
 export const CardController = {
   createCard,
   getAllCards,
   updateListId,
+  addCardMember,
+  removeCardMember,
+  updateSingleCard,
 };

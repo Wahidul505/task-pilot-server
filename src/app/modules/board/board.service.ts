@@ -80,6 +80,42 @@ const getAllBoardsOfMember = async (
   return result;
 };
 
+const getAllBoardsOfSingleWorkspace = async (
+  workspaceId: string,
+  user: JwtPayload
+): Promise<Board[]> => {
+  const result = await prisma.board.findMany({
+    where: {
+      workspaceId,
+      OR: [
+        {
+          BoardMembers: {
+            some: {
+              userId: user?.userId,
+            },
+          },
+        },
+        {
+          admin: user?.userId,
+        },
+      ],
+    },
+    include: {
+      template: true,
+      workspace: {
+        include: {
+          WorkspaceAdmins: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  return result;
+};
+
 const getSingleData = async (
   id: string,
   user: JwtPayload
@@ -133,4 +169,5 @@ export const BoardService = {
   getAllBoardsOfMember,
   getSingleData,
   updateBoardTitle,
+  getAllBoardsOfSingleWorkspace,
 };
