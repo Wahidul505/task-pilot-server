@@ -29,7 +29,28 @@ const getAllLists = (boardId, user) => __awaiter(void 0, void 0, void 0, functio
             boardId: boardId,
         },
         include: {
-            Cards: true,
+            Cards: {
+                include: {
+                    list: {
+                        include: {
+                            board: {
+                                include: {
+                                    BoardMembers: {
+                                        include: {
+                                            user: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    CardMembers: {
+                        include: {
+                            user: true,
+                        },
+                    },
+                },
+            },
         },
         orderBy: {
             createdAt: 'asc',

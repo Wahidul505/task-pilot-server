@@ -46,6 +46,19 @@ const removeBoardMember = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const leaveBoard = catchAsync(async (req: Request, res: Response) => {
+  const result = await BoardService.leaveBoard(
+    req.params.id,
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'You left from the board',
+    data: result,
+  });
+});
+
 const getAllBoardsOfMember = catchAsync(async (req: Request, res: Response) => {
   const result = await BoardService.getAllBoardsOfMember(
     req?.user as JwtPayload
@@ -100,12 +113,27 @@ const updateBoardTitle = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteSingleBoard = catchAsync(async (req: Request, res: Response) => {
+  const result = await BoardService.deleteSingleBoard(
+    req?.params?.id as string,
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Board deleted',
+    data: result,
+  });
+});
+
 export const BoardController = {
   insertIntoDB,
   addBoardMembers,
   removeBoardMember,
+  leaveBoard,
   getAllBoardsOfMember,
   getAllBoardsOfSingleWorkspace,
   getSingleData,
   updateBoardTitle,
+  deleteSingleBoard,
 };

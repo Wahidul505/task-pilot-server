@@ -8,7 +8,8 @@ import { WorkspaceUtils } from './workspace.utils';
 
 const insertIntoDB = async (user: JwtPayload, payload: IWorkSpacePayload) => {
   const { admins, ...workspacePayload } = payload;
-  const newAdmins = admins.find(admin => admin !== user?.userId)
+  console.log(payload);
+  const newAdmins = admins?.find(admin => admin !== user?.userId)
     ? [...admins, user?.userId]
     : [...admins];
 
@@ -170,13 +171,12 @@ const addWorkspaceAdmins = async (
     );
 
     for (let index = 0; index < admins.length; index++) {
-      const result = await prisma.workspaceAdmin.create({
+      await prisma.workspaceAdmin.create({
         data: {
           workspaceId: id,
           userId: admins[index],
         },
       });
-      console.log({ result });
     }
     return payload;
   } catch (error) {

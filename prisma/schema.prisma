@@ -94,7 +94,7 @@ model Card {
   title       String
   description String?
   dueDate     DateTime?
-  status      CardStatus?
+  status      CardStatus? @default(pending)
   createdAt   DateTime    @default(now())
   listId      String
   list        List        @relation(fields: [listId], references: [id])
@@ -157,5 +157,4 @@ enum ChecklistItemStatus {
 enum CardStatus {
   pending
   done
-  overdue
 }

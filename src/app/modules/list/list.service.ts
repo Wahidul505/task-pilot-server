@@ -93,8 +93,6 @@ const deleteSingleList = async (
   id: string,
   user: JwtPayload
 ): Promise<List> => {
-  console.log({ id });
-  console.log({ user });
   const result = await prisma.list.delete({
     where: {
       id,

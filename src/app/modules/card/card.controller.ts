@@ -76,13 +76,31 @@ const removeCardMember = catchAsync(async (req: Request, res: Response) => {
 const updateSingleCard = catchAsync(async (req: Request, res: Response) => {
   const result = await CardService.updateSingleCard(
     req.params?.id as string,
-    req?.body as { title?: string; description?: string },
+    req?.body as {
+      title?: string;
+      description?: string;
+      dueDate?: Date;
+      status: 'pending' | 'done';
+    },
     req?.user as JwtPayload
   );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Card Updated',
+    data: result,
+  });
+});
+
+const removeSingleCard = catchAsync(async (req: Request, res: Response) => {
+  const result = await CardService.removeSingleCard(
+    req.params?.id as string,
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Card Deleted',
     data: result,
   });
 });
@@ -94,4 +112,5 @@ export const CardController = {
   addCardMember,
   removeCardMember,
   updateSingleCard,
+  removeSingleCard,
 };

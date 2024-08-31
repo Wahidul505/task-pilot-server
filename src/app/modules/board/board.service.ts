@@ -30,16 +30,13 @@ const addBoardMembers = async (id: string, payload: any, user: JwtPayload) => {
       (member: string) => member !== user?.userId
     );
 
-    console.log({ members });
-
     for (let index = 0; index < members.length; index++) {
-      const result = await prisma.boardMember.create({
+      await prisma.boardMember.create({
         data: {
           boardId: id,
           userId: members[index],
         },
       });
-      console.log({ result });
     }
     return payload;
   } catch (error) {
@@ -53,13 +50,42 @@ const removeBoardMember = async (
   user: JwtPayload
 ) => {
   await BoardUtils.checkAdminExistInBoard(id, user?.userId);
+  const result = await prisma.$transaction(async prisma => {
+    // Remove the board member from all cards within the board
+    await prisma.cardMember.deleteMany({
+      where: {
+        userId: payload.memberId as string,
+        card: {
+          list: {
+            boardId: id,
+          },
+        },
+      },
+    });
+
+    // Remove the board member from the board
+    await prisma.boardMember.deleteMany({
+      where: {
+        boardId: id,
+        userId: payload.memberId as string,
+      },
+    });
+    return payload;
+  });
+  return result;
+};
+
+const leaveBoard = async (id: string, user: JwtPayload) => {
+  console.log({ id });
+  console.log({ user: user?.userId });
+  await BoardUtils.checkEitherAdminOrMemberInBoard(id, user?.userId);
   await prisma.boardMember.deleteMany({
     where: {
       boardId: id,
-      userId: payload.memberId as string,
+      userId: user?.userId,
     },
   });
-  return payload;
+  return user;
 };
 
 const getAllBoardsOfMember = async (
@@ -162,12 +188,125 @@ const updateBoardTitle = async (
   return result;
 };
 
+// const deleteSingleBoard = async (
+//   id: string,
+//   user: JwtPayload
+// ): Promise<Board> => {
+//   await BoardUtils.checkAdminExistInBoard(id, user?.userId);
+//   const result = await prisma.board.delete({
+//     where: {
+//       id,
+//     },
+//   });
+//   return result;
+// };
+
+const deleteSingleBoard = async (
+  id: string,
+  user: JwtPayload
+): Promise<Board | null> => {
+  // Check if the user is an admin of the board
+  await BoardUtils.checkAdminExistInBoard(id, user?.userId);
+
+  try {
+    // Start a transaction to ensure all deletions happen atomically
+    const result = await prisma.$transaction(async prisma => {
+      // Delete related CardMembers
+      await prisma.cardMember.deleteMany({
+        where: {
+          card: {
+            list: {
+              boardId: id,
+            },
+          },
+        },
+      });
+
+      // Delete related CardComments
+      await prisma.cardComment.deleteMany({
+        where: {
+          card: {
+            list: {
+              boardId: id,
+            },
+          },
+        },
+      });
+
+      // Delete related ChecklistItems
+      await prisma.checklistItem.deleteMany({
+        where: {
+          checklist: {
+            card: {
+              list: {
+                boardId: id,
+              },
+            },
+          },
+        },
+      });
+
+      // Delete related Checklists
+      await prisma.checklist.deleteMany({
+        where: {
+          card: {
+            list: {
+              boardId: id,
+            },
+          },
+        },
+      });
+
+      // Delete related Cards
+      await prisma.card.deleteMany({
+        where: {
+          list: {
+            boardId: id,
+          },
+        },
+      });
+
+      // Delete related Lists
+      await prisma.list.deleteMany({
+        where: {
+          boardId: id,
+        },
+      });
+
+      // Delete related BoardMembers
+      await prisma.boardMember.deleteMany({
+        where: {
+          boardId: id,
+        },
+      });
+
+      // Finally, delete the Board itself
+      const deletedBoard = await prisma.board.delete({
+        where: {
+          id: id,
+        },
+      });
+
+      return deletedBoard;
+    });
+
+    return result;
+  } catch (error) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to delete board'
+    );
+  }
+};
+
 export const BoardService = {
   insertIntoDB,
   addBoardMembers,
   removeBoardMember,
+  leaveBoard,
   getAllBoardsOfMember,
   getSingleData,
   updateBoardTitle,
   getAllBoardsOfSingleWorkspace,
+  deleteSingleBoard,
 };

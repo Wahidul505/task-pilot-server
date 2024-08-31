@@ -46,8 +46,41 @@ const updateListId = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         data: result,
     });
 }));
+const addCardMember = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    const result = yield card_service_1.CardService.addCardMember((_c = req.params) === null || _c === void 0 ? void 0 : _c.id, req === null || req === void 0 ? void 0 : req.body, req === null || req === void 0 ? void 0 : req.user);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Card member added',
+        data: result,
+    });
+}));
+const removeCardMember = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    const result = yield card_service_1.CardService.removeCardMember((_d = req.params) === null || _d === void 0 ? void 0 : _d.id, req === null || req === void 0 ? void 0 : req.body, req === null || req === void 0 ? void 0 : req.user);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Card member removed',
+        data: result,
+    });
+}));
+const updateSingleCard = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _e;
+    const result = yield card_service_1.CardService.updateSingleCard((_e = req.params) === null || _e === void 0 ? void 0 : _e.id, req === null || req === void 0 ? void 0 : req.body, req === null || req === void 0 ? void 0 : req.user);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Card Updated',
+        data: result,
+    });
+}));
 exports.CardController = {
     createCard,
     getAllCards,
     updateListId,
+    addCardMember,
+    removeCardMember,
+    updateSingleCard,
 };

@@ -12,6 +12,7 @@ router.get('/member', (0, auth_1.default)(), board_controller_1.BoardController.
 router.get('/:workspaceId/common', (0, auth_1.default)(), board_controller_1.BoardController.getAllBoardsOfSingleWorkspace);
 router.post('/:id/member', (0, auth_1.default)(), board_controller_1.BoardController.addBoardMembers);
 router.delete('/:id/member', (0, auth_1.default)(), board_controller_1.BoardController.removeBoardMember);
+router.delete('/:id/self', (0, auth_1.default)(), board_controller_1.BoardController.leaveBoard);
 router.post('/', (0, auth_1.default)(), board_controller_1.BoardController.insertIntoDB);
 router.get('/:id', (0, auth_1.default)(), board_controller_1.BoardController.getSingleData);
 router.patch('/:id/title', (0, auth_1.default)(), board_controller_1.BoardController.updateBoardTitle);

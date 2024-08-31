@@ -10,5 +10,8 @@ const card_controller_1 = require("./card.controller");
 const router = express_1.default.Router();
 router.post('/', (0, auth_1.default)(), card_controller_1.CardController.createCard);
 router.get('/:id', (0, auth_1.default)(), card_controller_1.CardController.getAllCards);
+router.patch('/:id', (0, auth_1.default)(), card_controller_1.CardController.updateSingleCard);
 router.patch('/:id/list', (0, auth_1.default)(), card_controller_1.CardController.updateListId);
+router.post('/:id/member', (0, auth_1.default)(), card_controller_1.CardController.addCardMember);
+router.delete('/:id/member', (0, auth_1.default)(), card_controller_1.CardController.removeCardMember);
 exports.CardRoutes = router;

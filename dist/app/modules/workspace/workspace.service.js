@@ -166,13 +166,12 @@ const addWorkspaceAdmins = (id, payload, user) => __awaiter(void 0, void 0, void
         yield workspace_utils_1.WorkspaceUtils.checkAdminExistInWorkspace(user === null || user === void 0 ? void 0 : user.userId, id);
         const admins = (_a = payload === null || payload === void 0 ? void 0 : payload.admins) === null || _a === void 0 ? void 0 : _a.filter((admin) => admin !== (user === null || user === void 0 ? void 0 : user.userId));
         for (let index = 0; index < admins.length; index++) {
-            const result = yield prisma_1.default.workspaceAdmin.create({
+            yield prisma_1.default.workspaceAdmin.create({
                 data: {
                     workspaceId: id,
                     userId: admins[index],
                 },
             });
-            console.log({ result });
         }
         return payload;
     }

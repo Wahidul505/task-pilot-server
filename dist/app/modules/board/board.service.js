@@ -30,15 +30,13 @@ const addBoardMembers = (id, payload, user) => __awaiter(void 0, void 0, void 0,
     try {
         yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard(id, user === null || user === void 0 ? void 0 : user.userId);
         const members = (_a = payload === null || payload === void 0 ? void 0 : payload.members) === null || _a === void 0 ? void 0 : _a.filter((member) => member !== (user === null || user === void 0 ? void 0 : user.userId));
-        console.log({ members });
         for (let index = 0; index < members.length; index++) {
-            const result = yield prisma_1.default.boardMember.create({
+            yield prisma_1.default.boardMember.create({
                 data: {
                     boardId: id,
                     userId: members[index],
                 },
             });
-            console.log({ result });
         }
         return payload;
     }
@@ -55,6 +53,18 @@ const removeBoardMember = (id, payload, user) => __awaiter(void 0, void 0, void 
         },
     });
     return payload;
+});
+const leaveBoard = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log({ id });
+    console.log({ user: user === null || user === void 0 ? void 0 : user.userId });
+    yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard(id, user === null || user === void 0 ? void 0 : user.userId);
+    yield prisma_1.default.boardMember.deleteMany({
+        where: {
+            boardId: id,
+            userId: user === null || user === void 0 ? void 0 : user.userId,
+        },
+    });
+    return user;
 });
 const getAllBoardsOfMember = (user) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield prisma_1.default.boardMember.findMany({
@@ -144,6 +154,7 @@ exports.BoardService = {
     insertIntoDB,
     addBoardMembers,
     removeBoardMember,
+    leaveBoard,
     getAllBoardsOfMember,
     getSingleData,
     updateBoardTitle,

@@ -1,8 +1,8 @@
 -- CreateEnum
-CREATE TYPE "BoardPrivacy" AS ENUM ('private', 'workspace');
+CREATE TYPE "ChecklistItemStatus" AS ENUM ('pending', 'done');
 
 -- CreateEnum
-CREATE TYPE "ChecklistItemStatus" AS ENUM ('pending', 'done');
+CREATE TYPE "CardStatus" AS ENUM ('pending', 'done', 'overdue');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -10,7 +10,7 @@ CREATE TABLE "users" (
     "name" TEXT,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
-    "profileImg" TEXT,
+    "dp" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -37,18 +37,14 @@ CREATE TABLE "workspaces" (
 
 -- CreateTable
 CREATE TABLE "workspace_admins" (
-    "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "workspaceId" TEXT NOT NULL,
-
-    CONSTRAINT "workspace_admins_pkey" PRIMARY KEY ("id")
+    "workspaceId" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "boards" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "privacy" "BoardPrivacy" NOT NULL DEFAULT 'workspace',
     "admin" TEXT NOT NULL,
     "templateId" TEXT NOT NULL,
     "workspaceId" TEXT NOT NULL,
@@ -58,11 +54,8 @@ CREATE TABLE "boards" (
 
 -- CreateTable
 CREATE TABLE "board_members" (
-    "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "boardId" TEXT NOT NULL,
-
-    CONSTRAINT "board_members_pkey" PRIMARY KEY ("id")
+    "boardId" TEXT NOT NULL
 );
 
 -- CreateTable
@@ -70,6 +63,7 @@ CREATE TABLE "lists" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "boardId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "lists_pkey" PRIMARY KEY ("id")
 );
@@ -80,6 +74,8 @@ CREATE TABLE "cards" (
     "title" TEXT NOT NULL,
     "description" TEXT,
     "dueDate" TIMESTAMP(3),
+    "status" "CardStatus",
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "listId" TEXT NOT NULL,
 
     CONSTRAINT "cards_pkey" PRIMARY KEY ("id")
@@ -87,11 +83,8 @@ CREATE TABLE "cards" (
 
 -- CreateTable
 CREATE TABLE "card_members" (
-    "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "cardId" TEXT NOT NULL,
-
-    CONSTRAINT "card_members_pkey" PRIMARY KEY ("id")
+    "cardId" TEXT NOT NULL
 );
 
 -- CreateTable
@@ -109,6 +102,7 @@ CREATE TABLE "checklists" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "cardId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "checklists_pkey" PRIMARY KEY ("id")
 );
@@ -118,6 +112,7 @@ CREATE TABLE "checklist_items" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "status" "ChecklistItemStatus" NOT NULL DEFAULT 'pending',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "checklistId" TEXT NOT NULL,
 
     CONSTRAINT "checklist_items_pkey" PRIMARY KEY ("id")
@@ -125,6 +120,15 @@ CREATE TABLE "checklist_items" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "workspace_admins_userId_workspaceId_key" ON "workspace_admins"("userId", "workspaceId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "board_members_userId_boardId_key" ON "board_members"("userId", "boardId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "card_members_userId_cardId_key" ON "card_members"("userId", "cardId");
 
 -- AddForeignKey
 ALTER TABLE "workspace_admins" ADD CONSTRAINT "workspace_admins_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

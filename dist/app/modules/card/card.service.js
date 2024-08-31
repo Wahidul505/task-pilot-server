@@ -17,35 +17,16 @@ const http_status_1 = __importDefault(require("http-status"));
 const ApiError_1 = __importDefault(require("../../../errors/ApiError"));
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const board_utils_1 = require("../board/board.utils");
+const card_utils_1 = require("./card.utils");
 const createCard = (payload, user) => __awaiter(void 0, void 0, void 0, function* () {
-    const list = yield prisma_1.default.list.findUnique({
-        where: {
-            id: payload === null || payload === void 0 ? void 0 : payload.listId,
-        },
-    });
-    if (list) {
-        yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard(list === null || list === void 0 ? void 0 : list.boardId, user === null || user === void 0 ? void 0 : user.userId);
-    }
-    else {
-        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "List doesn't exist");
-    }
+    yield card_utils_1.CardUtils.checkEitherAdminOrMemberInBoard(payload === null || payload === void 0 ? void 0 : payload.listId, user === null || user === void 0 ? void 0 : user.userId);
     const result = yield prisma_1.default.card.create({
         data: payload,
     });
     return result;
 });
 const getAllCards = (listId, user) => __awaiter(void 0, void 0, void 0, function* () {
-    const list = yield prisma_1.default.list.findUnique({
-        where: {
-            id: listId,
-        },
-    });
-    if (list) {
-        yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard(list === null || list === void 0 ? void 0 : list.boardId, user === null || user === void 0 ? void 0 : user.userId);
-    }
-    else {
-        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "List doesn't exist");
-    }
+    yield board_utils_1.BoardUtils.checkAdminExistInBoard(listId, user === null || user === void 0 ? void 0 : user.userId);
     const result = yield prisma_1.default.card.findMany({
         where: {
             listId,
@@ -57,17 +38,7 @@ const getAllCards = (listId, user) => __awaiter(void 0, void 0, void 0, function
     return result;
 });
 const updateListId = (id, payload, user) => __awaiter(void 0, void 0, void 0, function* () {
-    const list = yield prisma_1.default.list.findUnique({
-        where: {
-            id: payload === null || payload === void 0 ? void 0 : payload.listId,
-        },
-    });
-    if (list) {
-        yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard(list === null || list === void 0 ? void 0 : list.boardId, user === null || user === void 0 ? void 0 : user.userId);
-    }
-    else {
-        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "List doesn't exist");
-    }
+    yield card_utils_1.CardUtils.checkEitherAdminOrMemberInBoard(payload === null || payload === void 0 ? void 0 : payload.listId, user === null || user === void 0 ? void 0 : user.userId);
     const result = yield prisma_1.default.card.update({
         where: {
             id,
@@ -76,8 +47,91 @@ const updateListId = (id, payload, user) => __awaiter(void 0, void 0, void 0, fu
     });
     return result;
 });
+const addCardMember = (id, payload, user) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    try {
+        const board = yield prisma_1.default.card.findUnique({
+            where: {
+                id,
+            },
+            include: {
+                list: true,
+            },
+        });
+        if (!board)
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Board is not found');
+        yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard((_a = board === null || board === void 0 ? void 0 : board.list) === null || _a === void 0 ? void 0 : _a.boardId, user === null || user === void 0 ? void 0 : user.userId);
+        yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard((_b = board === null || board === void 0 ? void 0 : board.list) === null || _b === void 0 ? void 0 : _b.boardId, payload === null || payload === void 0 ? void 0 : payload.memberId);
+        yield prisma_1.default.cardMember.create({
+            data: {
+                cardId: id,
+                userId: payload === null || payload === void 0 ? void 0 : payload.memberId,
+            },
+        });
+        return payload;
+    }
+    catch (error) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Already Added');
+    }
+});
+const removeCardMember = (id, payload, user) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c, _d;
+    try {
+        const board = yield prisma_1.default.card.findUnique({
+            where: {
+                id,
+            },
+            include: {
+                list: true,
+            },
+        });
+        if (!board)
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Board is not found');
+        yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard((_c = board === null || board === void 0 ? void 0 : board.list) === null || _c === void 0 ? void 0 : _c.boardId, user === null || user === void 0 ? void 0 : user.userId);
+        yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard((_d = board === null || board === void 0 ? void 0 : board.list) === null || _d === void 0 ? void 0 : _d.boardId, payload === null || payload === void 0 ? void 0 : payload.memberId);
+        yield prisma_1.default.cardMember.deleteMany({
+            where: {
+                cardId: id,
+                userId: payload === null || payload === void 0 ? void 0 : payload.memberId,
+            },
+        });
+        return payload;
+    }
+    catch (error) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Already removed');
+    }
+});
+const updateSingleCard = (id, payload, user) => __awaiter(void 0, void 0, void 0, function* () {
+    var _e;
+    try {
+        const board = yield prisma_1.default.card.findUnique({
+            where: {
+                id,
+            },
+            include: {
+                list: true,
+            },
+        });
+        if (!board)
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Board is not found');
+        yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard((_e = board === null || board === void 0 ? void 0 : board.list) === null || _e === void 0 ? void 0 : _e.boardId, user === null || user === void 0 ? void 0 : user.userId);
+        const result = yield prisma_1.default.card.update({
+            where: {
+                id,
+            },
+            data: payload,
+        });
+        return result;
+    }
+    catch (error) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Something Went Wrong');
+    }
+});
 exports.CardService = {
     createCard,
     getAllCards,
     updateListId,
+    addCardMember,
+    removeCardMember,
+    updateSingleCard,
 };

@@ -11,7 +11,9 @@ router.get(
   BoardController.getAllBoardsOfSingleWorkspace
 );
 router.post('/:id/member', auth(), BoardController.addBoardMembers);
+router.delete('/:id', auth(), BoardController.deleteSingleBoard);
 router.delete('/:id/member', auth(), BoardController.removeBoardMember);
+router.delete('/:id/self', auth(), BoardController.leaveBoard);
 router.post('/', auth(), BoardController.insertIntoDB);
 router.get('/:id', auth(), BoardController.getSingleData);
 router.patch('/:id/title', auth(), BoardController.updateBoardTitle);

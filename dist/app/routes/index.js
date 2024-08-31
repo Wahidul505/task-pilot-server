@@ -7,6 +7,9 @@ const express_1 = __importDefault(require("express"));
 const auth_route_1 = require("../modules/auth/auth.route");
 const board_route_1 = require("../modules/board/board.route");
 const card_route_1 = require("../modules/card/card.route");
+const checklist_route_1 = require("../modules/checklist/checklist.route");
+const checklistItem_route_1 = require("../modules/checklistItem/checklistItem.route");
+const comment_route_1 = require("../modules/comment/comment.route");
 const list_route_1 = require("../modules/list/list.route");
 const template_route_1 = require("../modules/template/template.route");
 const user_route_1 = require("../modules/user/user.route");
@@ -40,6 +43,18 @@ const moduleRoutes = [
     {
         path: '/card',
         route: card_route_1.CardRoutes,
+    },
+    {
+        path: '/comment',
+        route: comment_route_1.CommentRoutes,
+    },
+    {
+        path: '/checklist',
+        route: checklist_route_1.ChecklistRoutes,
+    },
+    {
+        path: '/checklist-item',
+        route: checklistItem_route_1.ChecklistItemRoutes,
     },
 ];
 moduleRoutes.forEach(route => router.use(route.path, route.route));

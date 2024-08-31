@@ -4,21 +4,13 @@ import { JwtPayload } from 'jsonwebtoken';
 import ApiError from '../../../errors/ApiError';
 import prisma from '../../../shared/prisma';
 import { BoardUtils } from '../board/board.utils';
+import { CardUtils } from './card.utils';
 
 const createCard = async (payload: Card, user: JwtPayload): Promise<Card> => {
-  const list = await prisma.list.findUnique({
-    where: {
-      id: payload?.listId,
-    },
-  });
-  if (list) {
-    await BoardUtils.checkEitherAdminOrMemberInBoard(
-      list?.boardId,
-      user?.userId
-    );
-  } else {
-    throw new ApiError(httpStatus.BAD_REQUEST, "List doesn't exist");
-  }
+  await CardUtils.checkEitherAdminOrMemberInBoard(
+    payload?.listId,
+    user?.userId
+  );
   const result = await prisma.card.create({
     data: payload,
   });
@@ -29,19 +21,7 @@ const getAllCards = async (
   listId: string,
   user: JwtPayload
 ): Promise<Card[]> => {
-  const list = await prisma.list.findUnique({
-    where: {
-      id: listId,
-    },
-  });
-  if (list) {
-    await BoardUtils.checkEitherAdminOrMemberInBoard(
-      list?.boardId,
-      user?.userId
-    );
-  } else {
-    throw new ApiError(httpStatus.BAD_REQUEST, "List doesn't exist");
-  }
+  await BoardUtils.checkAdminExistInBoard(listId, user?.userId);
   const result = await prisma.card.findMany({
     where: {
       listId,
@@ -58,19 +38,10 @@ const updateListId = async (
   payload: { listId: string },
   user: JwtPayload
 ): Promise<Card> => {
-  const list = await prisma.list.findUnique({
-    where: {
-      id: payload?.listId,
-    },
-  });
-  if (list) {
-    await BoardUtils.checkEitherAdminOrMemberInBoard(
-      list?.boardId,
-      user?.userId
-    );
-  } else {
-    throw new ApiError(httpStatus.BAD_REQUEST, "List doesn't exist");
-  }
+  await CardUtils.checkEitherAdminOrMemberInBoard(
+    payload?.listId,
+    user?.userId
+  );
   const result = await prisma.card.update({
     where: {
       id,
@@ -108,13 +79,12 @@ const addCardMember = async (
       payload?.memberId
     );
 
-    const result = await prisma.cardMember.create({
+    await prisma.cardMember.create({
       data: {
         cardId: id,
         userId: payload?.memberId,
       },
     });
-    console.log({ result });
 
     return payload;
   } catch (error) {
@@ -150,13 +120,12 @@ const removeCardMember = async (
       payload?.memberId
     );
 
-    const result = await prisma.cardMember.deleteMany({
+    await prisma.cardMember.deleteMany({
       where: {
         cardId: id,
         userId: payload?.memberId,
       },
     });
-    console.log({ result });
 
     return payload;
   } catch (error) {
@@ -166,7 +135,12 @@ const removeCardMember = async (
 
 const updateSingleCard = async (
   id: string,
-  payload: { title?: string; description?: string },
+  payload: {
+    title?: string;
+    description?: string;
+    dueDate?: Date;
+    status: 'pending' | 'done';
+  },
   user: JwtPayload
 ) => {
   try {
@@ -200,6 +174,53 @@ const updateSingleCard = async (
   }
 };
 
+const removeSingleCard = async (id: string, user: JwtPayload) => {
+  try {
+    const board = await prisma.card.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        list: true,
+      },
+    });
+
+    if (!board)
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Board is not found');
+
+    await BoardUtils.checkEitherAdminOrMemberInBoard(
+      board?.list?.boardId,
+      user?.userId
+    );
+
+    await prisma.checklist.deleteMany({
+      where: {
+        cardId: id,
+      },
+    });
+    await prisma.cardMember.deleteMany({
+      where: {
+        cardId: id,
+      },
+    });
+    await prisma.cardComment.deleteMany({
+      where: {
+        cardId: id,
+      },
+    });
+
+    const result = await prisma.card.delete({
+      where: {
+        id,
+      },
+    });
+
+    return result;
+  } catch (error) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Something Went Wronggg');
+  }
+};
+
 export const CardService = {
   createCard,
   getAllCards,
@@ -207,4 +228,5 @@ export const CardService = {
   addCardMember,
   removeCardMember,
   updateSingleCard,
+  removeSingleCard,
 };
