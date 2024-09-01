@@ -1,5 +1,7 @@
 import { List } from '@prisma/client';
+import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
+import ApiError from '../../../errors/ApiError';
 import prisma from '../../../shared/prisma';
 import { BoardUtils } from '../board/board.utils';
 
@@ -93,14 +95,75 @@ const deleteSingleList = async (
   id: string,
   user: JwtPayload
 ): Promise<List> => {
-  const result = await prisma.list.delete({
-    where: {
-      id,
-      board: {
-        admin: user?.userId,
+  // Find the list to ensure it exists and retrieve related data
+  const list = await prisma.list.findUnique({
+    where: { id },
+    include: {
+      board: true,
+      Cards: {
+        include: {
+          Checklists: {
+            include: {
+              ChecklistItems: true,
+            },
+          },
+          CardMembers: true,
+          CardComments: true,
+        },
       },
     },
   });
+
+  if (!list) throw new ApiError(httpStatus.BAD_REQUEST, 'List not found');
+
+  // Check if the user is either an admin or a member of the board
+  await BoardUtils.checkEitherAdminOrMemberInBoard(list.boardId, user?.userId);
+
+  // Start a transaction to delete the list and its dependencies atomically
+  const result = await prisma.$transaction(async prisma => {
+    // Delete checklist items
+    for (const card of list.Cards) {
+      for (const checklist of card.Checklists) {
+        await prisma.checklistItem.deleteMany({
+          where: { checklistId: checklist.id },
+        });
+      }
+    }
+
+    // Delete checklists
+    for (const card of list.Cards) {
+      await prisma.checklist.deleteMany({
+        where: { cardId: card.id },
+      });
+    }
+
+    // Delete card members
+    for (const card of list.Cards) {
+      await prisma.cardMember.deleteMany({
+        where: { cardId: card.id },
+      });
+    }
+
+    // Delete card comments
+    for (const card of list.Cards) {
+      await prisma.cardComment.deleteMany({
+        where: { cardId: card.id },
+      });
+    }
+
+    // Delete cards
+    await prisma.card.deleteMany({
+      where: { listId: id },
+    });
+
+    // Finally, delete the list itself
+    const deletedList = await prisma.list.delete({
+      where: { id },
+    });
+
+    return deletedList;
+  });
+
   return result;
 };
 

@@ -188,19 +188,6 @@ const updateBoardTitle = async (
   return result;
 };
 
-// const deleteSingleBoard = async (
-//   id: string,
-//   user: JwtPayload
-// ): Promise<Board> => {
-//   await BoardUtils.checkAdminExistInBoard(id, user?.userId);
-//   const result = await prisma.board.delete({
-//     where: {
-//       id,
-//     },
-//   });
-//   return result;
-// };
-
 const deleteSingleBoard = async (
   id: string,
   user: JwtPayload

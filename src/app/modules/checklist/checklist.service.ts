@@ -87,8 +87,58 @@ const getAllChecklist = async (cardId: string): Promise<Checklist[]> => {
   return result;
 };
 
+const deleteSingleChecklist = async (
+  id: string,
+  user: JwtPayload
+): Promise<Checklist | null> => {
+  // Find the checklist to ensure it exists and to get related data
+  const checklist = await prisma.checklist.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      card: {
+        include: {
+          list: true,
+        },
+      },
+    },
+  });
+
+  if (!checklist)
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Checklist not found');
+
+  // Check if the user is either an admin or a member of the board
+  await BoardUtils.checkEitherAdminOrMemberInBoard(
+    checklist.card.list.boardId,
+    user?.userId
+  );
+
+  // Start a transaction to delete checklist and its related items atomically
+  const result = await prisma.$transaction(async prisma => {
+    // Delete related checklist items
+    await prisma.checklistItem.deleteMany({
+      where: {
+        checklistId: id,
+      },
+    });
+
+    // Delete the checklist itself
+    const deletedChecklist = await prisma.checklist.delete({
+      where: {
+        id,
+      },
+    });
+
+    return deletedChecklist;
+  });
+
+  return result;
+};
+
 export const ChecklistService = {
   createChecklist,
   updateChecklistTitle,
   getAllChecklist,
+  deleteSingleChecklist,
 };
