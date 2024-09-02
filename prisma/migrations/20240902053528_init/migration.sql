@@ -2,7 +2,7 @@
 CREATE TYPE "ChecklistItemStatus" AS ENUM ('pending', 'done');
 
 -- CreateEnum
-CREATE TYPE "CardStatus" AS ENUM ('pending', 'done', 'overdue');
+CREATE TYPE "CardStatus" AS ENUM ('pending', 'done');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -74,7 +74,7 @@ CREATE TABLE "cards" (
     "title" TEXT NOT NULL,
     "description" TEXT,
     "dueDate" TIMESTAMP(3),
-    "status" "CardStatus",
+    "status" "CardStatus" DEFAULT 'pending',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "listId" TEXT NOT NULL,
 
