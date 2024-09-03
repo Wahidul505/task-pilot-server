@@ -11,5 +11,6 @@ router.delete(
   auth(),
   ChecklistItemController.deleteSingleChecklistItem
 );
+router.get('/:id', auth(), ChecklistItemController.getAllChecklistItems);
 
 export const ChecklistItemRoutes = router;

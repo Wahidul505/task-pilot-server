@@ -49,8 +49,22 @@ const deleteSingleChecklistItem = catchAsync(
   }
 );
 
+const getAllChecklistItems = catchAsync(async (req: Request, res: Response) => {
+  const result = await ChecklistItemService.getAllChecklistItems(
+    req?.params?.id,
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Checklist items retrieved',
+    data: result,
+  });
+});
+
 export const ChecklistItemController = {
   createChecklistItem,
   updateSingleChecklistItem,
   deleteSingleChecklistItem,
+  getAllChecklistItems,
 };

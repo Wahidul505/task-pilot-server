@@ -70,8 +70,30 @@ const deleteSingleChecklistItem = async (
   return result;
 };
 
+const getAllChecklistItems = async (
+  checklistId: string,
+  user: JwtPayload
+): Promise<ChecklistItem[]> => {
+  // Check if the user is either an admin or a member of the board
+  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard(
+    checklistId,
+    user?.userId
+  );
+
+  // Retrieve all checklist items for the given checklist ID
+  const checklistItems = await prisma.checklistItem.findMany({
+    where: {
+      checklistId: checklistId,
+    },
+  });
+
+  // Return the retrieved checklist items
+  return checklistItems;
+};
+
 export const ChecklistItemService = {
   createChecklistItem,
   updateSingleChecklistItem,
   deleteSingleChecklistItem,
+  getAllChecklistItems,
 };
