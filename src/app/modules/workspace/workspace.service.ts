@@ -8,10 +8,7 @@ import { WorkspaceUtils } from './workspace.utils';
 
 const insertIntoDB = async (user: JwtPayload, payload: IWorkSpacePayload) => {
   const { admins, ...workspacePayload } = payload;
-  console.log(payload);
-  const newAdmins = admins?.find(admin => admin !== user?.userId)
-    ? [...admins, user?.userId]
-    : [...admins];
+  // console.log(payload);
 
   try {
     await prisma.$transaction(async transactionClient => {
@@ -20,13 +17,14 @@ const insertIntoDB = async (user: JwtPayload, payload: IWorkSpacePayload) => {
       });
 
       if (!newWorkspace) {
+        console.log('consoled 1');
         throw new ApiError(httpStatus.BAD_GATEWAY, 'Something went wrong');
       }
 
-      for (let index = 0; index < newAdmins.length; index++) {
+      for (let index = 0; index < admins.length; index++) {
         await transactionClient.workspaceAdmin.create({
           data: {
-            userId: newAdmins[index],
+            userId: admins[index],
             workspaceId: newWorkspace.id,
           },
         });

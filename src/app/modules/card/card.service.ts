@@ -21,7 +21,6 @@ const getAllCards = async (
   listId: string,
   user: JwtPayload
 ): Promise<Card[]> => {
-  await BoardUtils.checkAdminExistInBoard(listId, user?.userId);
   const result = await prisma.card.findMany({
     where: {
       listId,

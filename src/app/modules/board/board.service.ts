@@ -152,6 +152,7 @@ const getSingleData = async (
       id,
     },
     include: {
+      Lists: true,
       workspace: {
         include: {
           Boards: {
