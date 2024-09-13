@@ -7,6 +7,7 @@ import { ChecklistItemRoutes } from '../modules/checklistItem/checklistItem.rout
 import { CommentRoutes } from '../modules/comment/comment.route';
 import { ListRoutes } from '../modules/list/list.route';
 import { TemplateRoutes } from '../modules/template/template.route';
+import { ThemeRoutes } from '../modules/theme/theme.route';
 import { UserRoutes } from '../modules/user/user.route';
 import { WorkspaceRoutes } from '../modules/workspace/workspace.route';
 
@@ -20,6 +21,10 @@ const moduleRoutes = [
   {
     path: '/user',
     route: UserRoutes,
+  },
+  {
+    path: '/theme',
+    route: ThemeRoutes,
   },
   {
     path: '/template',

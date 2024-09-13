@@ -46,8 +46,19 @@ const getAllChecklist = (0, catchAsync_1.default)((req, res) => __awaiter(void 0
         data: result,
     });
 }));
+const deleteSingleChecklist = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    const result = yield checklist_service_1.ChecklistService.deleteSingleChecklist((_c = req === null || req === void 0 ? void 0 : req.params) === null || _c === void 0 ? void 0 : _c.id, req === null || req === void 0 ? void 0 : req.user);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Checklist deleted',
+        data: result,
+    });
+}));
 exports.ChecklistController = {
     createChecklist,
     updateChecklistTitle,
     getAllChecklist,
+    deleteSingleChecklist,
 };

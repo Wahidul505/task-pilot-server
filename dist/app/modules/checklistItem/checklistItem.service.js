@@ -57,8 +57,21 @@ const deleteSingleChecklistItem = (id, user) => __awaiter(void 0, void 0, void 0
     });
     return result;
 });
+const getAllChecklistItems = (checklistId, user) => __awaiter(void 0, void 0, void 0, function* () {
+    // Check if the user is either an admin or a member of the board
+    yield checklistItem_utils_1.ChecklistItemUtils.checkEitherAdminOrMemberInBoard(checklistId, user === null || user === void 0 ? void 0 : user.userId);
+    // Retrieve all checklist items for the given checklist ID
+    const checklistItems = yield prisma_1.default.checklistItem.findMany({
+        where: {
+            checklistId: checklistId,
+        },
+    });
+    // Return the retrieved checklist items
+    return checklistItems;
+});
 exports.ChecklistItemService = {
     createChecklistItem,
     updateSingleChecklistItem,
     deleteSingleChecklistItem,
+    getAllChecklistItems,
 };

@@ -92,6 +92,16 @@ const updateBoardTitle = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         data: result,
     });
 }));
+const deleteSingleBoard = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    const result = yield board_service_1.BoardService.deleteSingleBoard((_d = req === null || req === void 0 ? void 0 : req.params) === null || _d === void 0 ? void 0 : _d.id, req === null || req === void 0 ? void 0 : req.user);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Board deleted',
+        data: result,
+    });
+}));
 exports.BoardController = {
     insertIntoDB,
     addBoardMembers,
@@ -101,4 +111,5 @@ exports.BoardController = {
     getAllBoardsOfSingleWorkspace,
     getSingleData,
     updateBoardTitle,
+    deleteSingleBoard,
 };

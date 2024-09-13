@@ -56,6 +56,10 @@ const moduleRoutes = [
         path: '/checklist-item',
         route: checklistItem_route_1.ChecklistItemRoutes,
     },
+    {
+        path: '/',
+        route: (req, res) => res.send('Task Pilot lunched'),
+    },
 ];
 moduleRoutes.forEach(route => router.use(route.path, route.route));
 exports.default = router;

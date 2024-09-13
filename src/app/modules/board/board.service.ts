@@ -127,7 +127,7 @@ const getAllBoardsOfSingleWorkspace = async (
       ],
     },
     include: {
-      template: true,
+      theme: true,
       workspace: {
         include: {
           WorkspaceAdmins: {
@@ -157,7 +157,7 @@ const getSingleData = async (
         include: {
           Boards: {
             include: {
-              template: true,
+              theme: true,
             },
           },
         },
@@ -168,7 +168,7 @@ const getSingleData = async (
         },
       },
       user: true,
-      template: true,
+      theme: true,
     },
   });
   return result;
@@ -287,6 +287,99 @@ const deleteSingleBoard = async (
   }
 };
 
+// Service to create a new board based on a template
+const createBoardFromTemplate = async (
+  user: JwtPayload,
+  templateId: string,
+  workspaceId: string
+) => {
+  try {
+    // Fetch the template along with its lists and cards
+    const template = await prisma.boardTemplate.findUnique({
+      where: { id: templateId },
+      include: {
+        Lists: {
+          include: {
+            Cards: {
+              include: {
+                Checklists: {
+                  include: {
+                    ChecklistItems: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!template) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Template not found');
+    }
+
+    // Start a transaction to ensure atomic operations
+    const result = await prisma.$transaction(async prisma => {
+      // Create a new board using the template's details
+      const newBoard = await prisma.board.create({
+        data: {
+          title: template?.title, // Title of the new board
+          admin: user?.userId, // User who is creating the board
+          workspaceId, // Associate with the provided workspace
+          themeId: template?.themeId, // Reference to the template
+        },
+      });
+
+      // Loop through each list in the template and create them in the new board
+      for (const templateList of template.Lists) {
+        const newList = await prisma.list.create({
+          data: {
+            title: templateList.title, // Same title as the template list
+            boardId: newBoard.id, // Associate with the new board
+          },
+        });
+
+        // Loop through each card in the template list and create them in the new list
+        for (const templateCard of templateList.Cards) {
+          const newCard = await prisma.card.create({
+            data: {
+              title: templateCard.title,
+              description: templateCard.description,
+              listId: newList.id, // Associate with the newly created list
+            },
+          });
+          for (const templateChecklist of templateCard.Checklists) {
+            const newChecklist = await prisma.checklist.create({
+              data: {
+                title: templateChecklist.title,
+                cardId: newCard.id, // Associate with the newly created card
+              },
+            });
+            for (const templateItem of templateChecklist.ChecklistItems) {
+              await prisma.checklistItem.create({
+                data: {
+                  title: templateItem.title,
+                  checklistId: newChecklist.id, // Associate with the newly created checklist
+                },
+              });
+            }
+          }
+        }
+      }
+
+      return newBoard;
+    });
+
+    return result;
+  } catch (error) {
+    console.error(error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to create board from template'
+    );
+  }
+};
+
 export const BoardService = {
   insertIntoDB,
   addBoardMembers,
@@ -297,4 +390,5 @@ export const BoardService = {
   updateBoardTitle,
   getAllBoardsOfSingleWorkspace,
   deleteSingleBoard,
+  createBoardFromTemplate,
 };

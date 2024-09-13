@@ -76,6 +76,16 @@ const updateSingleCard = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         data: result,
     });
 }));
+const removeSingleCard = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _f;
+    const result = yield card_service_1.CardService.removeSingleCard((_f = req.params) === null || _f === void 0 ? void 0 : _f.id, req === null || req === void 0 ? void 0 : req.user);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Card Deleted',
+        data: result,
+    });
+}));
 exports.CardController = {
     createCard,
     getAllCards,
@@ -83,4 +93,5 @@ exports.CardController = {
     addCardMember,
     removeCardMember,
     updateSingleCard,
+    removeSingleCard,
 };

@@ -18,12 +18,12 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
-CREATE TABLE "templates" (
+CREATE TABLE "themes" (
     "id" TEXT NOT NULL,
     "bgImg" TEXT,
     "bgColor" TEXT,
 
-    CONSTRAINT "templates_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "themes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -46,10 +46,41 @@ CREATE TABLE "boards" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "admin" TEXT NOT NULL,
-    "templateId" TEXT NOT NULL,
+    "themeId" TEXT NOT NULL,
     "workspaceId" TEXT NOT NULL,
 
     CONSTRAINT "boards_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "board_templates" (
+    "id" TEXT NOT NULL,
+    "templateTitle" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "themeId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "board_templates_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "list_templates" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "boardTemplateId" TEXT NOT NULL,
+
+    CONSTRAINT "list_templates_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "card_templates" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "listId" TEXT NOT NULL,
+
+    CONSTRAINT "card_templates_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -140,10 +171,22 @@ ALTER TABLE "workspace_admins" ADD CONSTRAINT "workspace_admins_workspaceId_fkey
 ALTER TABLE "boards" ADD CONSTRAINT "boards_admin_fkey" FOREIGN KEY ("admin") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "boards" ADD CONSTRAINT "boards_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "templates"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "boards" ADD CONSTRAINT "boards_themeId_fkey" FOREIGN KEY ("themeId") REFERENCES "themes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "boards" ADD CONSTRAINT "boards_workspaceId_fkey" FOREIGN KEY ("workspaceId") REFERENCES "workspaces"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "board_templates" ADD CONSTRAINT "board_templates_themeId_fkey" FOREIGN KEY ("themeId") REFERENCES "themes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "board_templates" ADD CONSTRAINT "board_templates_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "list_templates" ADD CONSTRAINT "list_templates_boardTemplateId_fkey" FOREIGN KEY ("boardTemplateId") REFERENCES "board_templates"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "card_templates" ADD CONSTRAINT "card_templates_listId_fkey" FOREIGN KEY ("listId") REFERENCES "list_templates"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "board_members" ADD CONSTRAINT "board_members_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

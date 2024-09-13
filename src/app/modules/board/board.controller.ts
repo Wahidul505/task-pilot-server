@@ -126,6 +126,23 @@ const deleteSingleBoard = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const createBoardFromTemplate = catchAsync(
+  async (req: Request, res: Response) => {
+    const { templateId, workspaceId } = req?.body;
+    const result = await BoardService.createBoardFromTemplate(
+      req?.user as JwtPayload,
+      templateId as string,
+      workspaceId as string
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Board created',
+      data: result,
+    });
+  }
+);
+
 export const BoardController = {
   insertIntoDB,
   addBoardMembers,
@@ -136,4 +153,5 @@ export const BoardController = {
   getSingleData,
   updateBoardTitle,
   deleteSingleBoard,
+  createBoardFromTemplate,
 };

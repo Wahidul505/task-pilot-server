@@ -10,6 +10,7 @@ router.get(
   auth(),
   BoardController.getAllBoardsOfSingleWorkspace
 );
+router.post('/from-template', auth(), BoardController.createBoardFromTemplate);
 router.post('/:id/member', auth(), BoardController.addBoardMembers);
 router.delete('/:id', auth(), BoardController.deleteSingleBoard);
 router.delete('/:id/member', auth(), BoardController.removeBoardMember);

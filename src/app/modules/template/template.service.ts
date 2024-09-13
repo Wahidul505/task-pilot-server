@@ -1,53 +1,102 @@
-import { Template } from '@prisma/client';
+import httpStatus from 'http-status';
+import { JwtPayload } from 'jsonwebtoken';
+import ApiError from '../../../errors/ApiError';
 import prisma from '../../../shared/prisma';
 
-const insertIntoDB = async (payload: Template): Promise<Template> => {
-  const result = await prisma.template.create({
-    data: payload,
-  });
-  return result;
-};
+const createTemplate = async (
+  user: JwtPayload,
+  boardId: string,
+  templateTitle: string
+) => {
+  try {
+    // Fetch the board along with its lists and cards
+    const board = await prisma.board.findUnique({
+      where: { id: boardId },
+      include: {
+        Lists: {
+          include: {
+            Cards: {
+              include: {
+                Checklists: {
+                  include: {
+                    ChecklistItems: true,
+                  },
+                },
+              },
+            }, // Include cards within each list
+          },
+        },
+      },
+    });
 
-const getAllFromDB = async (): Promise<Template[]> => {
-  const result = await prisma.template.findMany();
-  return result;
-};
+    if (!board) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Board not found');
+    }
 
-const getSingleData = async (id: string): Promise<Template | null> => {
-  const result = await prisma.template.findUnique({
-    where: {
-      id,
-    },
-  });
-  return result;
-};
+    // Begin transaction to ensure atomic operations
+    const result = await prisma.$transaction(async prisma => {
+      // Create a BoardTemplate entry
+      const createdTemplate = await prisma.boardTemplate.create({
+        data: {
+          title: board?.title,
+          templateTitle,
+          themeId: board?.themeId,
+          userId: user?.userId,
+        },
+      });
 
-const updateSingleData = async (
-  id: string,
-  payload: Partial<Template>
-): Promise<Template | null> => {
-  const result = await prisma.template.update({
-    where: {
-      id,
-    },
-    data: payload,
-  });
-  return result;
-};
+      // For each list in the board, create a TemplateList and associated TemplateCards
+      for (const list of board.Lists) {
+        // Create TemplateList from each board's list
+        const createdTemplateList = await prisma.listTemplate.create({
+          data: {
+            title: list.title,
+            boardTemplateId: createdTemplate.id,
+          },
+        });
 
-const deleteSingleData = async (id: string): Promise<Template | null> => {
-  const result = await prisma.template.delete({
-    where: {
-      id,
-    },
-  });
-  return result;
+        // For each card in the list, create a TemplateCard
+        for (const card of list.Cards) {
+          const createdTemplateCard = await prisma.cardTemplate.create({
+            data: {
+              title: card.title,
+              description: card.description,
+              listId: createdTemplateList.id,
+            },
+          });
+          for (const checklist of card?.Checklists) {
+            const createdTemplateChecklist =
+              await prisma.checklistTemplate.create({
+                data: {
+                  title: checklist.title,
+                  cardId: createdTemplateCard.id,
+                },
+              });
+            for (const item of checklist?.ChecklistItems) {
+              await prisma.checklistItemTemplate.create({
+                data: {
+                  title: item.title,
+                  checklistId: createdTemplateChecklist.id,
+                },
+              });
+            }
+          }
+        }
+      }
+
+      return createdTemplate;
+    });
+
+    return result;
+  } catch (error) {
+    console.error(error);
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to create template from board'
+    );
+  }
 };
 
 export const TemplateService = {
-  insertIntoDB,
-  getAllFromDB,
-  getSingleData,
-  updateSingleData,
-  deleteSingleData,
+  createTemplate,
 };

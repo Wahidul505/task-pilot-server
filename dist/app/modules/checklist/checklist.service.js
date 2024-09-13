@@ -91,8 +91,45 @@ const getAllChecklist = (cardId) => __awaiter(void 0, void 0, void 0, function* 
     });
     return result;
 });
+const deleteSingleChecklist = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
+    // Find the checklist to ensure it exists and to get related data
+    const checklist = yield prisma_1.default.checklist.findUnique({
+        where: {
+            id,
+        },
+        include: {
+            card: {
+                include: {
+                    list: true,
+                },
+            },
+        },
+    });
+    if (!checklist)
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Checklist not found');
+    // Check if the user is either an admin or a member of the board
+    yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard(checklist.card.list.boardId, user === null || user === void 0 ? void 0 : user.userId);
+    // Start a transaction to delete checklist and its related items atomically
+    const result = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+        // Delete related checklist items
+        yield prisma.checklistItem.deleteMany({
+            where: {
+                checklistId: id,
+            },
+        });
+        // Delete the checklist itself
+        const deletedChecklist = yield prisma.checklist.delete({
+            where: {
+                id,
+            },
+        });
+        return deletedChecklist;
+    }));
+    return result;
+});
 exports.ChecklistService = {
     createChecklist,
     updateChecklistTitle,
     getAllChecklist,
+    deleteSingleChecklist,
 };

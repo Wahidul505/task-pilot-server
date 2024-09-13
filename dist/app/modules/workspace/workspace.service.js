@@ -30,21 +30,20 @@ const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const workspace_utils_1 = require("./workspace.utils");
 const insertIntoDB = (user, payload) => __awaiter(void 0, void 0, void 0, function* () {
     const { admins } = payload, workspacePayload = __rest(payload, ["admins"]);
-    const newAdmins = admins.find(admin => admin !== (user === null || user === void 0 ? void 0 : user.userId))
-        ? [...admins, user === null || user === void 0 ? void 0 : user.userId]
-        : [...admins];
+    // console.log(payload);
     try {
         yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
             const newWorkspace = yield transactionClient.workspace.create({
                 data: workspacePayload,
             });
             if (!newWorkspace) {
+                console.log('consoled 1');
                 throw new ApiError_1.default(http_status_1.default.BAD_GATEWAY, 'Something went wrong');
             }
-            for (let index = 0; index < newAdmins.length; index++) {
+            for (let index = 0; index < admins.length; index++) {
                 yield transactionClient.workspaceAdmin.create({
                     data: {
-                        userId: newAdmins[index],
+                        userId: admins[index],
                         workspaceId: newWorkspace.id,
                     },
                 });

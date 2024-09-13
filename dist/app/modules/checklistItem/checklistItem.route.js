@@ -11,4 +11,5 @@ const router = express_1.default.Router();
 router.post('/', (0, auth_1.default)(), checklistItem_controller_1.ChecklistItemController.createChecklistItem);
 router.patch('/:id', (0, auth_1.default)(), checklistItem_controller_1.ChecklistItemController.updateSingleChecklistItem);
 router.delete('/:id', (0, auth_1.default)(), checklistItem_controller_1.ChecklistItemController.deleteSingleChecklistItem);
+router.get('/:id', (0, auth_1.default)(), checklistItem_controller_1.ChecklistItemController.getAllChecklistItems);
 exports.ChecklistItemRoutes = router;

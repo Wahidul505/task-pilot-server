@@ -37,6 +37,7 @@ const getAllLists = async (
                       user: true,
                     },
                   },
+                  user: true,
                 },
               },
             },

@@ -13,6 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListService = void 0;
+const http_status_1 = __importDefault(require("http-status"));
+const ApiError_1 = __importDefault(require("../../../errors/ApiError"));
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const board_utils_1 = require("../board/board.utils");
 const createList = (payload, user) => __awaiter(void 0, void 0, void 0, function* () {
@@ -79,14 +81,66 @@ const updateListTitle = (id, payload, user) => __awaiter(void 0, void 0, void 0,
     return result;
 });
 const deleteSingleList = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield prisma_1.default.list.delete({
-        where: {
-            id,
-            board: {
-                admin: user === null || user === void 0 ? void 0 : user.userId,
+    // Find the list to ensure it exists and retrieve related data
+    const list = yield prisma_1.default.list.findUnique({
+        where: { id },
+        include: {
+            board: true,
+            Cards: {
+                include: {
+                    Checklists: {
+                        include: {
+                            ChecklistItems: true,
+                        },
+                    },
+                    CardMembers: true,
+                    CardComments: true,
+                },
             },
         },
     });
+    if (!list)
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'List not found');
+    // Check if the user is either an admin or a member of the board
+    yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard(list.boardId, user === null || user === void 0 ? void 0 : user.userId);
+    // Start a transaction to delete the list and its dependencies atomically
+    const result = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+        // Delete checklist items
+        for (const card of list.Cards) {
+            for (const checklist of card.Checklists) {
+                yield prisma.checklistItem.deleteMany({
+                    where: { checklistId: checklist.id },
+                });
+            }
+        }
+        // Delete checklists
+        for (const card of list.Cards) {
+            yield prisma.checklist.deleteMany({
+                where: { cardId: card.id },
+            });
+        }
+        // Delete card members
+        for (const card of list.Cards) {
+            yield prisma.cardMember.deleteMany({
+                where: { cardId: card.id },
+            });
+        }
+        // Delete card comments
+        for (const card of list.Cards) {
+            yield prisma.cardComment.deleteMany({
+                where: { cardId: card.id },
+            });
+        }
+        // Delete cards
+        yield prisma.card.deleteMany({
+            where: { listId: id },
+        });
+        // Finally, delete the list itself
+        const deletedList = yield prisma.list.delete({
+            where: { id },
+        });
+        return deletedList;
+    }));
     return result;
 });
 exports.ListService = {

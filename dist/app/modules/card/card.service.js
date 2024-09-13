@@ -26,7 +26,6 @@ const createCard = (payload, user) => __awaiter(void 0, void 0, void 0, function
     return result;
 });
 const getAllCards = (listId, user) => __awaiter(void 0, void 0, void 0, function* () {
-    yield board_utils_1.BoardUtils.checkAdminExistInBoard(listId, user === null || user === void 0 ? void 0 : user.userId);
     const result = yield prisma_1.default.card.findMany({
         where: {
             listId,
@@ -127,6 +126,46 @@ const updateSingleCard = (id, payload, user) => __awaiter(void 0, void 0, void 0
         throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Something Went Wrong');
     }
 });
+const removeSingleCard = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
+    var _f;
+    try {
+        const board = yield prisma_1.default.card.findUnique({
+            where: {
+                id,
+            },
+            include: {
+                list: true,
+            },
+        });
+        if (!board)
+            throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Board is not found');
+        yield board_utils_1.BoardUtils.checkEitherAdminOrMemberInBoard((_f = board === null || board === void 0 ? void 0 : board.list) === null || _f === void 0 ? void 0 : _f.boardId, user === null || user === void 0 ? void 0 : user.userId);
+        yield prisma_1.default.checklist.deleteMany({
+            where: {
+                cardId: id,
+            },
+        });
+        yield prisma_1.default.cardMember.deleteMany({
+            where: {
+                cardId: id,
+            },
+        });
+        yield prisma_1.default.cardComment.deleteMany({
+            where: {
+                cardId: id,
+            },
+        });
+        const result = yield prisma_1.default.card.delete({
+            where: {
+                id,
+            },
+        });
+        return result;
+    }
+    catch (error) {
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'Something Went Wronggg');
+    }
+});
 exports.CardService = {
     createCard,
     getAllCards,
@@ -134,4 +173,5 @@ exports.CardService = {
     addCardMember,
     removeCardMember,
     updateSingleCard,
+    removeSingleCard,
 };

@@ -20,17 +20,19 @@ model User {
   BoardMembers    BoardMember[]
   CardMembers     CardMember[]
   CardComments    CardComment[]
+  BoardTemplate   BoardTemplate[]
 
   @@map("users")
 }
 
-model Template {
-  id      String  @id @default(uuid())
-  bgImg   String?
-  bgColor String?
-  Boards  Board[]
+model Theme {
+  id            String          @id @default(uuid())
+  bgImg         String?
+  bgColor       String?
+  Boards        Board[]
+  BoardTemplate BoardTemplate[]
 
-  @@map("templates")
+  @@map("themes")
 }
 
 model Workspace {
@@ -59,13 +61,67 @@ model Board {
   admin        String
   user         User          @relation(fields: [admin], references: [id])
   BoardMembers BoardMember[]
-  templateId   String
-  template     Template      @relation(fields: [templateId], references: [id])
+  themeId      String        @map("themeId")
+  theme        Theme         @relation(fields: [themeId], references: [id])
   workspaceId  String
   workspace    Workspace     @relation(fields: [workspaceId], references: [id])
   Lists        List[]
 
   @@map("boards")
+}
+
+model BoardTemplate {
+  id            String         @id @default(uuid())
+  templateTitle String
+  title         String
+  themeId       String         @map("themeId")
+  theme         Theme          @relation(fields: [themeId], references: [id])
+  createdAt     DateTime       @default(now())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id]) // User who created the template
+  Lists         ListTemplate[] // Store template lists here instead of referencing the original board
+
+  @@map("board_templates")
+}
+
+model ListTemplate {
+  id              String         @id @default(uuid())
+  title           String
+  boardTemplateId String
+  boardTemplate   BoardTemplate  @relation(fields: [boardTemplateId], references: [id])
+  Cards           CardTemplate[] // Store template cards here
+
+  @@map("list_templates")
+}
+
+model CardTemplate {
+  id           String              @id @default(uuid())
+  title        String
+  description  String?
+  listId       String
+  listTemplate ListTemplate        @relation(fields: [listId], references: [id])
+  Checklists   ChecklistTemplate[]
+
+  @@map("card_templates")
+}
+
+model ChecklistTemplate {
+  id             String                  @id @default(uuid())
+  title          String
+  cardId         String
+  cardTemplate   CardTemplate            @relation(fields: [cardId], references: [id])
+  ChecklistItems ChecklistItemTemplate[]
+
+  @@map("checklist_templates")
+}
+
+model ChecklistItemTemplate {
+  id                String            @id @default(uuid())
+  title             String
+  checklistId       String
+  checklistTemplate ChecklistTemplate @relation(fields: [checklistId], references: [id])
+
+  @@map("checklist_item_templates")
 }
 
 model BoardMember {

@@ -71,7 +71,7 @@ const getSingleFromDB = async (
           ],
         },
         include: {
-          template: true,
+          theme: true,
         },
       },
       WorkspaceAdmins: {
@@ -128,7 +128,7 @@ const getAllWorkspacesOfGuest = async (
           },
         },
         include: {
-          template: true,
+          theme: true,
         },
       },
       WorkspaceAdmins: {

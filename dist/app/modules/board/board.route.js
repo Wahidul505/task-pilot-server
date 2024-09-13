@@ -11,6 +11,7 @@ const router = express_1.default.Router();
 router.get('/member', (0, auth_1.default)(), board_controller_1.BoardController.getAllBoardsOfMember);
 router.get('/:workspaceId/common', (0, auth_1.default)(), board_controller_1.BoardController.getAllBoardsOfSingleWorkspace);
 router.post('/:id/member', (0, auth_1.default)(), board_controller_1.BoardController.addBoardMembers);
+router.delete('/:id', (0, auth_1.default)(), board_controller_1.BoardController.deleteSingleBoard);
 router.delete('/:id/member', (0, auth_1.default)(), board_controller_1.BoardController.removeBoardMember);
 router.delete('/:id/self', (0, auth_1.default)(), board_controller_1.BoardController.leaveBoard);
 router.post('/', (0, auth_1.default)(), board_controller_1.BoardController.insertIntoDB);

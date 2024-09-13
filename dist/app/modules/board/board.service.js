@@ -46,13 +46,28 @@ const addBoardMembers = (id, payload, user) => __awaiter(void 0, void 0, void 0,
 });
 const removeBoardMember = (id, payload, user) => __awaiter(void 0, void 0, void 0, function* () {
     yield board_utils_1.BoardUtils.checkAdminExistInBoard(id, user === null || user === void 0 ? void 0 : user.userId);
-    yield prisma_1.default.boardMember.deleteMany({
-        where: {
-            boardId: id,
-            userId: payload.memberId,
-        },
-    });
-    return payload;
+    const result = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+        // Remove the board member from all cards within the board
+        yield prisma.cardMember.deleteMany({
+            where: {
+                userId: payload.memberId,
+                card: {
+                    list: {
+                        boardId: id,
+                    },
+                },
+            },
+        });
+        // Remove the board member from the board
+        yield prisma.boardMember.deleteMany({
+            where: {
+                boardId: id,
+                userId: payload.memberId,
+            },
+        });
+        return payload;
+    }));
+    return result;
 });
 const leaveBoard = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
     console.log({ id });
@@ -120,6 +135,7 @@ const getSingleData = (id, user) => __awaiter(void 0, void 0, void 0, function* 
             id,
         },
         include: {
+            Lists: true,
             workspace: {
                 include: {
                     Boards: {
@@ -150,6 +166,88 @@ const updateBoardTitle = (id, payload, user) => __awaiter(void 0, void 0, void 0
     });
     return result;
 });
+const deleteSingleBoard = (id, user) => __awaiter(void 0, void 0, void 0, function* () {
+    // Check if the user is an admin of the board
+    yield board_utils_1.BoardUtils.checkAdminExistInBoard(id, user === null || user === void 0 ? void 0 : user.userId);
+    try {
+        // Start a transaction to ensure all deletions happen atomically
+        const result = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+            // Delete related CardMembers
+            yield prisma.cardMember.deleteMany({
+                where: {
+                    card: {
+                        list: {
+                            boardId: id,
+                        },
+                    },
+                },
+            });
+            // Delete related CardComments
+            yield prisma.cardComment.deleteMany({
+                where: {
+                    card: {
+                        list: {
+                            boardId: id,
+                        },
+                    },
+                },
+            });
+            // Delete related ChecklistItems
+            yield prisma.checklistItem.deleteMany({
+                where: {
+                    checklist: {
+                        card: {
+                            list: {
+                                boardId: id,
+                            },
+                        },
+                    },
+                },
+            });
+            // Delete related Checklists
+            yield prisma.checklist.deleteMany({
+                where: {
+                    card: {
+                        list: {
+                            boardId: id,
+                        },
+                    },
+                },
+            });
+            // Delete related Cards
+            yield prisma.card.deleteMany({
+                where: {
+                    list: {
+                        boardId: id,
+                    },
+                },
+            });
+            // Delete related Lists
+            yield prisma.list.deleteMany({
+                where: {
+                    boardId: id,
+                },
+            });
+            // Delete related BoardMembers
+            yield prisma.boardMember.deleteMany({
+                where: {
+                    boardId: id,
+                },
+            });
+            // Finally, delete the Board itself
+            const deletedBoard = yield prisma.board.delete({
+                where: {
+                    id: id,
+                },
+            });
+            return deletedBoard;
+        }));
+        return result;
+    }
+    catch (error) {
+        throw new ApiError_1.default(http_status_1.default.INTERNAL_SERVER_ERROR, 'Failed to delete board');
+    }
+});
 exports.BoardService = {
     insertIntoDB,
     addBoardMembers,
@@ -159,4 +257,5 @@ exports.BoardService = {
     getSingleData,
     updateBoardTitle,
     getAllBoardsOfSingleWorkspace,
+    deleteSingleBoard,
 };
