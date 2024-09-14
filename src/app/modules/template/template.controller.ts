@@ -7,7 +7,6 @@ import { TemplateService } from './template.service';
 
 const createTemplate = catchAsync(async (req: Request, res: Response) => {
   const { boardId, templateTitle } = req?.body;
-  console.log(1, req?.user);
   const result = await TemplateService.createTemplate(
     req?.user as JwtPayload,
     boardId as string,
@@ -21,4 +20,21 @@ const createTemplate = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const TemplateController = { createTemplate };
+const getAllTemplatesOfSingleUser = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await TemplateService.getAllTemplatesOfSingleUser(
+      req?.user as JwtPayload
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Templates fetched',
+      data: result,
+    });
+  }
+);
+
+export const TemplateController = {
+  createTemplate,
+  getAllTemplatesOfSingleUser,
+};

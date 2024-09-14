@@ -1,3 +1,4 @@
+import { BoardTemplate } from '@prisma/client';
 import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import ApiError from '../../../errors/ApiError';
@@ -97,6 +98,21 @@ const createTemplate = async (
   }
 };
 
+const getAllTemplatesOfSingleUser = async (
+  user: JwtPayload
+): Promise<BoardTemplate[]> => {
+  const result = await prisma.boardTemplate.findMany({
+    where: {
+      userId: user?.userId,
+    },
+    include: {
+      theme: true,
+    },
+  });
+  return result;
+};
+
 export const TemplateService = {
   createTemplate,
+  getAllTemplatesOfSingleUser,
 };
