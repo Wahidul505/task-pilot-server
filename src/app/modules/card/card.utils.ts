@@ -13,11 +13,7 @@ const checkEitherAdminOrMemberInBoard = async (
     },
   });
   if (list) {
-    await BoardUtils.checkEitherAdminOrMemberInBoard({
-      boardId: list?.boardId,
-      userId: userId,
-      access: 'editor',
-    });
+    await BoardUtils.checkEitherAdminOrMemberInBoard(list?.boardId, userId);
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, "List doesn't exist");
   }

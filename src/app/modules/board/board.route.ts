@@ -18,6 +18,5 @@ router.delete('/:id/self', auth(), BoardController.leaveBoard);
 router.post('/', auth(), BoardController.insertIntoDB);
 router.get('/:id', auth(), BoardController.getSingleData);
 router.patch('/:id/title', auth(), BoardController.updateBoardTitle);
-router.patch('/:id/member', auth(), BoardController.updateBoardMember);
 
 export const BoardRoutes = router;

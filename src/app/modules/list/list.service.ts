@@ -6,11 +6,10 @@ import prisma from '../../../shared/prisma';
 import { BoardUtils } from '../board/board.utils';
 
 const createList = async (payload: List, user: JwtPayload): Promise<List> => {
-  await BoardUtils.checkEitherAdminOrMemberInBoard({
-    boardId: payload?.boardId,
-    userId: user?.userId,
-    access: 'editor',
-  });
+  await BoardUtils.checkEitherAdminOrMemberInBoard(
+    payload?.boardId,
+    user?.userId
+  );
   const result = await prisma.list.create({
     data: payload,
   });
@@ -21,10 +20,7 @@ const getAllLists = async (
   boardId: string,
   user: JwtPayload
 ): Promise<List[]> => {
-  await BoardUtils.checkEitherAdminOrMemberInBoard({
-    boardId,
-    userId: user?.userId,
-  });
+  await BoardUtils.checkEitherAdminOrMemberInBoard(boardId, user?.userId);
   const result = await prisma.list.findMany({
     where: {
       boardId: boardId,
@@ -71,10 +67,10 @@ const getSingleList = async (
     },
   });
   if (result)
-    await BoardUtils.checkEitherAdminOrMemberInBoard({
-      boardId: result?.boardId,
-      userId: user?.userId,
-    });
+    await BoardUtils.checkEitherAdminOrMemberInBoard(
+      result?.boardId,
+      user?.userId
+    );
   return result;
 };
 
@@ -83,11 +79,10 @@ const updateListTitle = async (
   payload: { title: string; boardId: string },
   user: JwtPayload
 ): Promise<List> => {
-  await BoardUtils.checkEitherAdminOrMemberInBoard({
-    boardId: payload?.boardId,
-    userId: user?.userId,
-    access: 'editor',
-  });
+  await BoardUtils.checkEitherAdminOrMemberInBoard(
+    payload?.boardId,
+    user?.userId
+  );
   const result = await prisma.list.update({
     where: {
       id,
@@ -123,11 +118,7 @@ const deleteSingleList = async (
   if (!list) throw new ApiError(httpStatus.BAD_REQUEST, 'List not found');
 
   // Check if the user is either an admin or a member of the board
-  await BoardUtils.checkEitherAdminOrMemberInBoard({
-    boardId: list.boardId,
-    userId: user?.userId,
-    access: 'editor',
-  });
+  await BoardUtils.checkEitherAdminOrMemberInBoard(list.boardId, user?.userId);
 
   // Start a transaction to delete the list and its dependencies atomically
   const result = await prisma.$transaction(async prisma => {

@@ -24,11 +24,7 @@ const insertIntoDB = async (
 
 const addBoardMembers = async (id: string, payload: any, user: JwtPayload) => {
   try {
-    await BoardUtils.checkEitherAdminOrMemberInBoard({
-      boardId: id,
-      userId: user?.userId,
-      access: 'editor',
-    });
+    await BoardUtils.checkEitherAdminOrMemberInBoard(id, user?.userId);
 
     const members = payload?.members?.filter(
       (member: string) => member !== user?.userId
@@ -82,10 +78,7 @@ const removeBoardMember = async (
 const leaveBoard = async (id: string, user: JwtPayload) => {
   console.log({ id });
   console.log({ user: user?.userId });
-  await BoardUtils.checkEitherAdminOrMemberInBoard({
-    boardId: id,
-    userId: user?.userId,
-  });
+  await BoardUtils.checkEitherAdminOrMemberInBoard(id, user?.userId);
   await prisma.boardMember.deleteMany({
     where: {
       boardId: id,
@@ -153,10 +146,7 @@ const getSingleData = async (
   id: string,
   user: JwtPayload
 ): Promise<Board | null> => {
-  await BoardUtils.checkEitherAdminOrMemberInBoard({
-    boardId: id,
-    userId: user?.userId,
-  });
+  await BoardUtils.checkEitherAdminOrMemberInBoard(id, user?.userId);
   const result = await prisma.board.findUnique({
     where: {
       id,
@@ -390,30 +380,6 @@ const createBoardFromTemplate = async (
   }
 };
 
-const updateBoardMember = async (
-  id: string,
-  payload: { userId: string; access: 'read_only' | 'editor' },
-  user: JwtPayload
-) => {
-  await BoardUtils.checkAdminExistInBoard(id, user?.userId);
-  await BoardUtils.checkEitherAdminOrMemberInBoard({
-    boardId: id,
-    userId: payload?.userId,
-  });
-  const result = await prisma?.boardMember?.update({
-    where: {
-      userId_boardId: {
-        userId: payload?.userId as string,
-        boardId: id as string,
-      },
-    },
-    data: {
-      access: payload?.access,
-    },
-  });
-  return result;
-};
-
 export const BoardService = {
   insertIntoDB,
   addBoardMembers,
@@ -425,5 +391,4 @@ export const BoardService = {
   getAllBoardsOfSingleWorkspace,
   deleteSingleBoard,
   createBoardFromTemplate,
-  updateBoardMember,
 };

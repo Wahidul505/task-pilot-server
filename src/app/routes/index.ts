@@ -4,6 +4,7 @@ import { BoardRoutes } from '../modules/board/board.route';
 import { CardRoutes } from '../modules/card/card.route';
 import { ChecklistRoutes } from '../modules/checklist/checklist.route';
 import { ChecklistItemRoutes } from '../modules/checklistItem/checklistItem.route';
+import { CollabRoutes } from '../modules/collab/collab.route';
 import { CommentRoutes } from '../modules/comment/comment.route';
 import { ListRoutes } from '../modules/list/list.route';
 import { TemplateRoutes } from '../modules/template/template.route';
@@ -37,6 +38,10 @@ const moduleRoutes = [
   {
     path: '/board',
     route: BoardRoutes,
+  },
+  {
+    path: '/collab',
+    route: CollabRoutes,
   },
   {
     path: '/list',

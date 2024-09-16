@@ -9,11 +9,10 @@ const createChecklistItem = async (
   payload: ChecklistItem,
   user: JwtPayload
 ): Promise<ChecklistItem> => {
-  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard({
-    checklistId: payload?.checklistId,
-    userId: user?.userId,
-    access: 'editor',
-  });
+  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard(
+    payload?.checklistId,
+    user?.userId
+  );
 
   const result = await prisma.checklistItem.create({
     data: payload,
@@ -33,11 +32,10 @@ const updateSingleChecklistItem = async (
   });
   if (!checklist)
     throw new ApiError(httpStatus.BAD_REQUEST, 'Checklist not found');
-  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard({
-    checklistId: checklist?.checklistId,
-    userId: user?.userId,
-    access: 'editor',
-  });
+  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard(
+    checklist?.checklistId,
+    user?.userId
+  );
 
   const result = await prisma.checklistItem.update({
     where: {
@@ -59,11 +57,10 @@ const deleteSingleChecklistItem = async (
   });
   if (!checklist)
     throw new ApiError(httpStatus.BAD_REQUEST, 'Checklist not found');
-  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard({
-    checklistId: checklist?.checklistId,
-    userId: user?.userId,
-    access: 'editor',
-  });
+  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard(
+    checklist?.checklistId,
+    user?.userId
+  );
 
   const result = await prisma.checklistItem.delete({
     where: {
@@ -78,10 +75,10 @@ const getAllChecklistItems = async (
   user: JwtPayload
 ): Promise<ChecklistItem[]> => {
   // Check if the user is either an admin or a member of the board
-  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard({
+  await ChecklistItemUtils.checkEitherAdminOrMemberInBoard(
     checklistId,
-    userId: user?.userId,
-  });
+    user?.userId
+  );
 
   // Retrieve all checklist items for the given checklist ID
   const checklistItems = await prisma.checklistItem.findMany({

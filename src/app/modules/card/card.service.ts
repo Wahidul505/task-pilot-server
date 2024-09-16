@@ -68,17 +68,15 @@ const addCardMember = async (
     if (!board)
       throw new ApiError(httpStatus.BAD_REQUEST, 'Board is not found');
 
-    await BoardUtils.checkEitherAdminOrMemberInBoard({
-      boardId: board?.list?.boardId,
-      userId: user?.userId,
-      access: 'editor',
-    });
+    await BoardUtils.checkEitherAdminOrMemberInBoard(
+      board?.list?.boardId,
+      user?.userId
+    );
 
-    await BoardUtils.checkEitherAdminOrMemberInBoard({
-      boardId: board?.list?.boardId,
-      userId: payload?.memberId,
-      access: 'editor',
-    });
+    await BoardUtils.checkEitherAdminOrMemberInBoard(
+      board?.list?.boardId,
+      payload?.memberId
+    );
 
     await prisma.cardMember.create({
       data: {
@@ -111,16 +109,15 @@ const removeCardMember = async (
     if (!board)
       throw new ApiError(httpStatus.BAD_REQUEST, 'Board is not found');
 
-    await BoardUtils.checkEitherAdminOrMemberInBoard({
-      boardId: board?.list?.boardId,
-      userId: user?.userId,
-      access: 'editor',
-    });
+    await BoardUtils.checkEitherAdminOrMemberInBoard(
+      board?.list?.boardId,
+      user?.userId
+    );
 
-    await BoardUtils.checkEitherAdminOrMemberInBoard({
-      boardId: board?.list?.boardId,
-      userId: payload?.memberId,
-    });
+    await BoardUtils.checkEitherAdminOrMemberInBoard(
+      board?.list?.boardId,
+      payload?.memberId
+    );
 
     await prisma.cardMember.deleteMany({
       where: {
@@ -158,11 +155,10 @@ const updateSingleCard = async (
     if (!board)
       throw new ApiError(httpStatus.BAD_REQUEST, 'Board is not found');
 
-    await BoardUtils.checkEitherAdminOrMemberInBoard({
-      boardId: board?.list?.boardId,
-      userId: user?.userId,
-      access: 'editor',
-    });
+    await BoardUtils.checkEitherAdminOrMemberInBoard(
+      board?.list?.boardId,
+      user?.userId
+    );
 
     const result = await prisma.card.update({
       where: {
@@ -191,11 +187,10 @@ const removeSingleCard = async (id: string, user: JwtPayload) => {
     if (!board)
       throw new ApiError(httpStatus.BAD_REQUEST, 'Board is not found');
 
-    await BoardUtils.checkEitherAdminOrMemberInBoard({
-      boardId: board?.list?.boardId,
-      userId: user?.userId,
-      access: 'editor',
-    });
+    await BoardUtils.checkEitherAdminOrMemberInBoard(
+      board?.list?.boardId,
+      user?.userId
+    );
 
     await prisma.checklist.deleteMany({
       where: {

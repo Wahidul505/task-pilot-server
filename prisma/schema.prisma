@@ -21,6 +21,7 @@ model User {
   CardMembers     CardMember[]
   CardComments    CardComment[]
   BoardTemplate   BoardTemplate[]
+  CollabQueue     CollabQueue[]
 
   @@map("users")
 }
@@ -65,9 +66,29 @@ model Board {
   theme        Theme         @relation(fields: [themeId], references: [id])
   workspaceId  String
   workspace    Workspace     @relation(fields: [workspaceId], references: [id])
+  collabId     String?
+  boardCollab  BoardCollab?  @relation(fields: [collabId], references: [id])
   Lists        List[]
+  CollabQueue  CollabQueue[]
 
   @@map("boards")
+}
+
+model BoardCollab {
+  id          String        @id @default(uuid())
+  Boards      Board[]
+  CollabQueue CollabQueue[]
+}
+
+model CollabQueue {
+  id          String       @id @default(uuid())
+  boardId     String
+  board       Board        @relation(fields: [boardId], references: [id])
+  collabId    String
+  boardCollab BoardCollab  @relation(fields: [collabId], references: [id])
+  adminId     String
+  admin       User         @relation(fields: [adminId], references: [id])
+  status      CollabStatus @default(pending)
 }
 
 model BoardTemplate {
@@ -126,10 +147,9 @@ model ChecklistItemTemplate {
 
 model BoardMember {
   userId  String
-  user    User              @relation(fields: [userId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
   boardId String
-  board   Board             @relation(fields: [boardId], references: [id])
-  access  BoardMemberAccess @default(editor)
+  board   Board  @relation(fields: [boardId], references: [id])
 
   @@unique([userId, boardId])
   @@map("board_members")
@@ -216,7 +236,7 @@ enum CardStatus {
   done
 }
 
-enum BoardMemberAccess {
-  editor
-  read_only
+enum CollabStatus {
+  pending
+  accept
 }
