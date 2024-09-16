@@ -3,10 +3,15 @@ import ApiError from '../../../errors/ApiError';
 import prisma from '../../../shared/prisma';
 import { BoardUtils } from '../board/board.utils';
 
-const checkEitherAdminOrMemberInBoard = async (
-  checklistId: string,
-  userId: string
-) => {
+const checkEitherAdminOrMemberInBoard = async ({
+  checklistId,
+  userId,
+  access = 'read_only',
+}: {
+  checklistId: string;
+  userId: string;
+  access?: 'read_only' | 'editor';
+}) => {
   const checklist = await prisma.checklist.findUnique({
     where: {
       id: checklistId,
@@ -26,7 +31,11 @@ const checkEitherAdminOrMemberInBoard = async (
     },
   });
   if (!list) throw new ApiError(httpStatus.BAD_REQUEST, 'List not found');
-  await BoardUtils.checkEitherAdminOrMemberInBoard(list?.boardId, userId);
+  await BoardUtils.checkEitherAdminOrMemberInBoard({
+    boardId: list?.boardId,
+    userId,
+    access,
+  });
 };
 
 export const ChecklistItemUtils = { checkEitherAdminOrMemberInBoard };

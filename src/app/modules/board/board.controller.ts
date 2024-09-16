@@ -143,6 +143,21 @@ const createBoardFromTemplate = catchAsync(
   }
 );
 
+const updateBoardMember = catchAsync(async (req: Request, res: Response) => {
+  const boardId = req?.params?.id;
+  const result = await BoardService.updateBoardMember(
+    boardId,
+    req?.body as { userId: string; access: 'editor' | 'read_only' },
+    req?.user as JwtPayload
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Board created',
+    data: result,
+  });
+});
+
 export const BoardController = {
   insertIntoDB,
   addBoardMembers,
@@ -154,4 +169,5 @@ export const BoardController = {
   updateBoardTitle,
   deleteSingleBoard,
   createBoardFromTemplate,
+  updateBoardMember,
 };

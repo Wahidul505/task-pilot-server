@@ -21,7 +21,11 @@ const createChecklist = async (
     },
   });
   if (!list) throw new ApiError(httpStatus.BAD_REQUEST, 'List not found');
-  await BoardUtils.checkEitherAdminOrMemberInBoard(list?.boardId, user?.userId);
+  await BoardUtils.checkEitherAdminOrMemberInBoard({
+    boardId: list?.boardId,
+    userId: user?.userId,
+    access: 'editor',
+  });
 
   const result = await prisma.checklist.create({
     data: payload,
@@ -54,7 +58,11 @@ const updateChecklistTitle = async (
     },
   });
   if (!list) throw new ApiError(httpStatus.BAD_REQUEST, 'List not found');
-  await BoardUtils.checkEitherAdminOrMemberInBoard(list?.boardId, user?.userId);
+  await BoardUtils.checkEitherAdminOrMemberInBoard({
+    boardId: list?.boardId,
+    userId: user?.userId,
+    access: 'editor',
+  });
 
   const result = await prisma.checklist.update({
     where: {
@@ -109,10 +117,11 @@ const deleteSingleChecklist = async (
     throw new ApiError(httpStatus.BAD_REQUEST, 'Checklist not found');
 
   // Check if the user is either an admin or a member of the board
-  await BoardUtils.checkEitherAdminOrMemberInBoard(
-    checklist.card.list.boardId,
-    user?.userId
-  );
+  await BoardUtils.checkEitherAdminOrMemberInBoard({
+    boardId: checklist.card.list.boardId,
+    userId: user?.userId,
+    access: 'editor',
+  });
 
   // Start a transaction to delete checklist and its related items atomically
   const result = await prisma.$transaction(async prisma => {

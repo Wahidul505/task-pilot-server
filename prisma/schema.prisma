@@ -126,9 +126,10 @@ model ChecklistItemTemplate {
 
 model BoardMember {
   userId  String
-  user    User   @relation(fields: [userId], references: [id])
+  user    User              @relation(fields: [userId], references: [id])
   boardId String
-  board   Board  @relation(fields: [boardId], references: [id])
+  board   Board             @relation(fields: [boardId], references: [id])
+  access  BoardMemberAccess @default(editor)
 
   @@unique([userId, boardId])
   @@map("board_members")
@@ -213,4 +214,9 @@ enum ChecklistItemStatus {
 enum CardStatus {
   pending
   done
+}
+
+enum BoardMemberAccess {
+  editor
+  read_only
 }

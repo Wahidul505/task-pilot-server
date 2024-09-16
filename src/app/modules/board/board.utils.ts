@@ -30,10 +30,15 @@ const checkAdminExistInBoard = async (boardId: string, userId: string) => {
   }
 };
 
-const checkEitherAdminOrMemberInBoard = async (
-  boardId: string,
-  userId: string
-) => {
+const checkEitherAdminOrMemberInBoard = async ({
+  boardId,
+  userId,
+  access = 'read_only',
+}: {
+  boardId: string;
+  userId: string;
+  access?: 'editor' | 'read_only';
+}) => {
   const isAdmin = await prisma.board.findUnique({
     where: {
       id: boardId,
@@ -41,14 +46,24 @@ const checkEitherAdminOrMemberInBoard = async (
     },
   });
 
-  const isMember = await prisma.boardMember.findFirst({
+  const isEditor = await prisma.boardMember.findFirst({
+    where: {
+      userId: userId,
+      boardId: boardId,
+      access: 'editor',
+    },
+  });
+
+  const isReadOnly = await prisma.boardMember.findFirst({
     where: {
       userId: userId,
       boardId: boardId,
     },
   });
 
-  if (!isAdmin && !isMember) {
+  if (access === 'editor' && !isAdmin && !isEditor) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You are not Authorized');
+  } else if (!isAdmin && !isReadOnly) {
     throw new ApiError(httpStatus.FORBIDDEN, 'You are not Authorized');
   }
 };
