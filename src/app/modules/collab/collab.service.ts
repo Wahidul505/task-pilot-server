@@ -97,8 +97,6 @@ const collabAction = async (
     include: { boardCollab: { include: { Boards: true } } },
   });
 
-  console.log(9, collabQueueId, board2Id);
-
   if (!collabRequest) {
     throw new Error('Collaboration request not found');
   }
@@ -209,6 +207,59 @@ const collabAction = async (
   };
 };
 
+const getUserReceivedCollabRequests = async (user: JwtPayload) => {
+  // Fetch boards where the user is an admin
+  const userBoards = await prisma.board.findMany({
+    where: {
+      admin: user?.userId,
+    },
+    select: {
+      id: true, // Get only the board ID
+    },
+  });
+
+  const boardIds = userBoards.map(board => board.id);
+
+  if (!boardIds.length) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No boards found for the user');
+  }
+
+  // Fetch collaboration requests where the boardId is in the user's boards
+  const collabRequests = await prisma.collabQueue.findMany({
+    where: {
+      boardId: {
+        in: boardIds,
+      },
+      status: 'pending', // Only get pending requests
+    },
+    include: {
+      board: {
+        include: {
+          workspace: true,
+        },
+      }, // Include board details
+      boardCollab: {
+        include: {
+          Boards: true, // Include all boards involved in the collaboration
+        },
+      },
+      admin: {
+        select: {
+          id: true,
+          name: true,
+          email: true, // Include details of the requesting admin
+        },
+      },
+    },
+  });
+
+  if (!collabRequests.length) {
+    return {};
+  }
+
+  return collabRequests;
+};
+
 const getSingleCollab = async (id: string) => {
   const result = await prisma.boardCollab.findFirst({
     where: { id },
@@ -218,6 +269,9 @@ const getSingleCollab = async (id: string) => {
   return result2;
 };
 
-export const CollabService = { collabRequest, collabAction, getSingleCollab };
-
-// 9094ea1f-45c9-4a8c-912b-c31487ed64eb
+export const CollabService = {
+  collabRequest,
+  collabAction,
+  getSingleCollab,
+  getUserReceivedCollabRequests,
+};

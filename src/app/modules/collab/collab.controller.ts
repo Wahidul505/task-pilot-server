@@ -21,7 +21,10 @@ const collabRequest = catchAsync(async (req: Request, res: Response) => {
 });
 
 const collabAction = catchAsync(async (req: Request, res: Response) => {
-  const { board2Id, status } = req?.body;
+  const { board2Id, status } = req?.body as {
+    board2Id: string;
+    status: 'accept' | 'decline';
+  };
   const result = await CollabService.collabAction(
     board2Id,
     req?.params?.collabQueueId,
@@ -46,8 +49,23 @@ const getSingleCollab = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getUserReceivedCollabRequests = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await CollabService.getUserReceivedCollabRequests(
+      req?.user as JwtPayload
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'fetched',
+      data: result,
+    });
+  }
+);
+
 export const CollabController = {
   collabRequest,
   collabAction,
   getSingleCollab,
+  getUserReceivedCollabRequests,
 };

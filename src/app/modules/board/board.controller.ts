@@ -71,6 +71,17 @@ const getAllBoardsOfMember = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllBoardsOfAdmin = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req?.body;
+  const result = await BoardService.getAllBoardsOfAdmin(email as string);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Fetched Boards',
+    data: result,
+  });
+});
+
 const getAllBoardsOfSingleWorkspace = catchAsync(
   async (req: Request, res: Response) => {
     const result = await BoardService.getAllBoardsOfSingleWorkspace(
@@ -149,6 +160,7 @@ export const BoardController = {
   removeBoardMember,
   leaveBoard,
   getAllBoardsOfMember,
+  getAllBoardsOfAdmin,
   getAllBoardsOfSingleWorkspace,
   getSingleData,
   updateBoardTitle,

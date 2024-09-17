@@ -105,6 +105,29 @@ const getAllBoardsOfMember = async (
   });
   return result;
 };
+const getAllBoardsOfAdmin = async (userEmail: string): Promise<Board[]> => {
+  // Find the user based on their email
+  const user = await prisma.user.findUnique({
+    where: { email: userEmail },
+  });
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  // Fetch all boards where the user is the admin
+  const result = await prisma.board.findMany({
+    where: {
+      admin: user.id,
+    },
+    include: {
+      workspace: true, // Include workspace details if needed
+      theme: true, // Include theme if you want additional board-related data
+    },
+  });
+
+  return result;
+};
 
 const getAllBoardsOfSingleWorkspace = async (
   workspaceId: string,
@@ -128,6 +151,20 @@ const getAllBoardsOfSingleWorkspace = async (
     },
     include: {
       theme: true,
+      boardCollab: {
+        include: {
+          Boards: {
+            where: {
+              workspaceId: {
+                notIn: [workspaceId],
+              },
+            },
+            include: {
+              theme: true,
+            },
+          },
+        },
+      },
       workspace: {
         include: {
           WorkspaceAdmins: {
@@ -386,6 +423,7 @@ export const BoardService = {
   removeBoardMember,
   leaveBoard,
   getAllBoardsOfMember,
+  getAllBoardsOfAdmin,
   getSingleData,
   updateBoardTitle,
   getAllBoardsOfSingleWorkspace,

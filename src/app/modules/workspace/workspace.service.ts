@@ -72,6 +72,20 @@ const getSingleFromDB = async (
         },
         include: {
           theme: true,
+          boardCollab: {
+            include: {
+              Boards: {
+                where: {
+                  workspaceId: {
+                    notIn: [id],
+                  },
+                },
+                include: {
+                  theme: true,
+                },
+              },
+            },
+          },
         },
       },
       WorkspaceAdmins: {

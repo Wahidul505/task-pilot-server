@@ -5,6 +5,7 @@ import { BoardController } from './board.controller';
 const router = express.Router();
 
 router.get('/member', auth(), BoardController.getAllBoardsOfMember);
+router.post('/admin', auth(), BoardController.getAllBoardsOfAdmin);
 router.get(
   '/:workspaceId/common',
   auth(),
