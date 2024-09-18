@@ -76,8 +76,6 @@ const removeBoardMember = async (
 };
 
 const leaveBoard = async (id: string, user: JwtPayload) => {
-  console.log({ id });
-  console.log({ user: user?.userId });
   await BoardUtils.checkEitherAdminOrMemberInBoard(id, user?.userId);
   await prisma.boardMember.deleteMany({
     where: {

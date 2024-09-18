@@ -24,6 +24,8 @@ const signup = async (payload: User): Promise<string> => {
     userId: result?.id,
     userEmail: result?.email,
     userName: result?.name || '',
+    userDp: result?.dp || '',
+    userCover: result?.cover || '',
   };
 
   const token = jwtHelpers.createToken(
@@ -53,6 +55,8 @@ const login = async (payload: Partial<User>): Promise<string> => {
     userId: isUserExist?.id,
     userEmail: isUserExist?.email,
     userName: isUserExist?.name || '',
+    userDp: isUserExist?.dp || '',
+    userCover: isUserExist?.cover || '',
   };
 
   const token = jwtHelpers.createToken(

@@ -1,7 +1,9 @@
 import { User } from '@prisma/client';
 import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
+import config from '../../../config';
 import ApiError from '../../../errors/ApiError';
+import { jwtHelpers } from '../../../helpers/jwtHelpers';
 import prisma from '../../../shared/prisma';
 import { exclude } from '../../../utils/exclude';
 import { validateUser } from '../../../utils/validateUser';
@@ -31,7 +33,7 @@ const updateSingleData = async (
   userId: string,
   user: JwtPayload,
   payload: Partial<User>
-): Promise<Partial<User>> => {
+): Promise<string> => {
   validateUser(user, userId);
   const isUserExist = await prisma.user.findUnique({
     where: {
@@ -46,6 +48,7 @@ const updateSingleData = async (
   const updateSingleData = {
     name: payload.name || isUserExist.name,
     dp: payload.dp || isUserExist.dp,
+    cover: payload.cover || isUserExist.cover,
   };
 
   await prisma.user.update({
@@ -55,7 +58,23 @@ const updateSingleData = async (
     data: updateSingleData,
   });
 
-  return updateSingleData;
+  const updatedUser = await prisma.user.findFirst({ where: { id: userId } });
+
+  const userInfo = {
+    userId: updatedUser?.id,
+    userEmail: updatedUser?.email,
+    userName: updatedUser?.name || '',
+    userDp: updatedUser?.dp || '',
+    userCover: updatedUser?.cover || '',
+  };
+
+  const token = jwtHelpers.createToken(
+    userInfo,
+    config.jwt.secret as string,
+    config.jwt.expires_in as string
+  );
+
+  return token;
 };
 
 const getAllFromDB = async () => {
