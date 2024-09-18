@@ -38,6 +38,7 @@ model Theme {
 
 model Workspace {
   id              String           @id @default(uuid())
+  createdAt       DateTime         @default(now())
   title           String
   description     String?
   WorkspaceAdmins WorkspaceAdmin[]
@@ -58,6 +59,7 @@ model WorkspaceAdmin {
 
 model Board {
   id           String        @id @default(uuid())
+  createdAt    DateTime      @default(now())
   title        String
   admin        String
   user         User          @relation(fields: [admin], references: [id])
@@ -76,12 +78,14 @@ model Board {
 
 model BoardCollab {
   id          String        @id @default(uuid())
+  createdAt   DateTime      @default(now())
   Boards      Board[]
   CollabQueue CollabQueue[]
 }
 
 model CollabQueue {
   id          String       @id @default(uuid())
+  createdAt   DateTime     @default(now())
   boardId     String
   board       Board        @relation(fields: [boardId], references: [id])
   collabId    String

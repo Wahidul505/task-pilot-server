@@ -162,6 +162,9 @@ const getAllBoardsOfSingleWorkspace = async (
             include: {
               theme: true,
             },
+            orderBy: {
+              createdAt: 'asc', // You can change to 'desc' for descending order
+            },
           },
         },
       },
@@ -174,6 +177,9 @@ const getAllBoardsOfSingleWorkspace = async (
           },
         },
       },
+    },
+    orderBy: {
+      createdAt: 'asc', // You can change to 'desc' for descending order
     },
   });
   return result;
@@ -197,6 +203,7 @@ const getSingleData = async (
               theme: true,
             },
           },
+          WorkspaceAdmins: true,
         },
       },
       BoardMembers: {
